@@ -1,0 +1,5 @@
+# Archives are verified byte-for-byte against sha256 in registry.json:
+# never let git touch line endings in them.
+*.tar.gz binary
+*.json text eol=lf
+*.md text eol=lf

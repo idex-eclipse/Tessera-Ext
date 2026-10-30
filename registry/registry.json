@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "plugins": [
+    {
+      "id": "tessera/spoolman",
+      "dir": "spoolman",
+      "name": "Spoolman",
+      "version": "0.1.0",
+      "description": "Spoolman integration: spools per tool, pre-print filament check",
+      "author": "Tessera",
+      "pluginApi": 1,
+      "url": "spoolman-0.1.0.tar.gz",
+      "sha256": "289ed9804c01650c1a69082c28bea57f6378b9fb83115a9fc7c69b73036e0cd9",
+      "size": 20753
+    }
+  ]
+}
