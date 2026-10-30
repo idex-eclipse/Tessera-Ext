@@ -5,15 +5,16 @@
 Реестр проверенных необязательных плагинов для [Tessera](https://github.com/idex-eclipse/Tessera) —
 модульного веб-интерфейса для Klipper.
 
-На принтере ничего не собирается. Каждая версия плагина лежит здесь готовым архивом,
-а `registry/registry.json` хранит sha256 каждого архива. Менеджер расширений Tessera
-скачивает архив, сверяет хеш и распаковывает его в `~/tessera/extensions/`.
+Каждый плагин опубликован здесь дважды: исходники в `plugins/<имя>/` и готовый архив
+на каждую версию в `registry/`. `registry/registry.json` хранит sha256 каждого
+архива. На принтере ничего не собирается: менеджер расширений Tessera скачивает
+архив, сверяет хеш и распаковывает его в `~/tessera/extensions/`.
 
 ## Плагины
 
 | Плагин | Версия | Что делает | Что нужно |
 |---|---|---|---|
-| **Spoolman** (`tessera/spoolman`) | 0.1.0 | катушка на каждый инструмент на дашборде, страница Spoolman, проверка материала и остатка филамента перед печатью | `[spoolman]` в Moonraker; для нескольких экструдеров — `[save_variables]` в Klipper и макросы `T0…Tn` |
+| [**Spoolman**](plugins/spoolman/README.md) (`tessera/spoolman`) | 0.1.0 | катушка на каждый инструмент на дашборде, страница Spoolman, проверка материала и остатка филамента перед печатью | `[spoolman]` в Moonraker; для нескольких экструдеров — `[save_variables]` в Klipper и макросы `T0…Tn` |
 
 ## Установка плагина
 
@@ -31,9 +32,10 @@
    ║  2) [Update]     │                                    ║
    ║  3) [Remove]     │                                    ║
    ║                  │                                    ║
+   ║  S) [Settings]   │                                    ║
    ║  R) [Refresh]    │                                    ║
    ╟──────────────────┼────────────────────────────────────╢
-   ║ Plugin API v1    │ Registry: idex-eclipse/Tessera-Ext ║
+   ║ Branch: main     │ Registry: idex-eclipse/Tessera-Ext ║
    ╟──────────────────┴────────────────────────────────────╢
    ║                        Q) Quit                        ║
    ╚═══════════════════════════════════════════════════════╝
@@ -86,10 +88,26 @@ tessera-ext list                 # плагины реестра и что ус�
 | плагина нет в **Settings → Plugins** | нажмите **Refresh**; если всё равно нет — `node ~/tessera/tools/extensions-sync.cjs` |
 | плагин обновлён, а в UI старая версия | перезагрузите страницу (F5) |
 
-## Другие реестры
+## Ветки и другие реестры
 
-`TESSERA_REGISTRY_URL` указывает менеджеру расширений другой `registry.json`: форк,
-ветку этого репозитория или локальный файл для проверки.
+Менеджер расширений читает `registry/registry.json` из ветки **main** этого
+репозитория. Чтобы попробовать ещё не выпущенные плагины, переключите ветку:
+
+- в меню: **S) Settings** → **1) [Branch]**. Менеджер покажет ветки с GitHub, выберите
+  номером или именем;
+- или командой: `tessera-ext branch dev` (`tessera-ext branch` показывает текущую и
+  доступные ветки).
+
+Выбор сохраняется в `~/.config/tessera/tessera-ext.conf` и виден внизу главного меню.
+Он не зависит от ветки самого Tessera, которая задаётся в меню `tessera`. Уже
+установленные плагины после переключения продолжают работать. Меню Update покажет,
+какие из них отличаются от выбранной ветки, в том числе более старые версии.
+
+Только на один запуск: `TESSERA_EXT_BRANCH=dev tessera-ext`.
+
+`TESSERA_REGISTRY_URL` указывает менеджеру любой другой `registry.json`: форк или
+локальный файл для проверки. Переменная главнее ветки, в меню отображается
+`Branch: custom`.
 
 ```bash
 TESSERA_REGISTRY_URL=https://raw.githubusercontent.com/<вы>/Tessera-Ext/<ветка>/registry/registry.json tessera-ext
@@ -100,37 +118,61 @@ TESSERA_REGISTRY_URL=https://raw.githubusercontent.com/<вы>/Tessera-Ext/<ве�
 ### Структура
 
 ```
+plugins/<имя>/                  исходники плагина: package.json, manifest.json, src/, тесты
 registry/registry.json          индекс: id, dir, name, version, pluginApi, url, sha256, size
 registry/<dir>-<version>.tar.gz архив: manifest.json + собранные файлы в корне
 ```
 
-`url` указан относительно `registry.json`, поэтому архивы скачиваются оттуда же, откуда
-индекс (raw.githubusercontent.com). GitHub Releases не нужны. `.gitattributes` помечает
-архивы как бинарные: git не должен менять в них ни байта, иначе проверка sha256 не
-пройдёт.
+Исходники и архивы лежат в одном репозитории: любой может пересобрать архив из
+`plugins/<имя>/` того же коммита и получить тот же sha256. Архив воспроизводим: записи
+отсортированы, время и владелец обнулены.
+
+`url` указан относительно `registry.json`, поэтому архивы скачиваются оттуда же,
+откуда индекс (raw.githubusercontent.com). GitHub Releases не нужны. `.gitattributes`
+помечает архивы как бинарные: git не должен менять в них ни байта, иначе проверка
+sha256 не пройдёт.
+
+### Разработка
+
+Склонируйте Tessera рядом с этим репозиторием — плагины берут оттуда типы SDK,
+упаковщик и dev-сервер:
+
+```
+…/Tessera/
+…/Tessera-Ext/
+```
+
+```bash
+cd Tessera-Ext/plugins/spoolman
+npm install
+npm run dev        # пересборка при изменениях, результат копируется в Tessera/extensions/spoolman/
+npm test
+```
+
+Запустите dev-сервер Tessera (`npm run dev` в `Tessera/`) и один раз выполните там
+`node tools/extensions-sync.cjs` — плагин появится в **Settings → Plugins**.
+`TESSERA_ROOT=/путь/к/Tessera` переопределяет соседнее расположение для скриптов
+сборки. Полный пример — [плагин Spoolman](plugins/spoolman/README.md).
 
 ### Публикация версии
 
 1. Поднимите `version` в `manifest.json` плагина.
-2. В папке плагина внутри Tessera (`Tessera/extensions/<плагин>`) выполните:
-
-   ```bash
-   npm run pack -- . <путь>/tessera-ext/registry
-   ```
-
-   Скрипт соберёт плагин, запишет архив и добавит или заменит его запись в
-   `registry.json`. Скрипт `pack` плагина вызывает `tools/registry-pack.cjs` из
-   Tessera. Архив воспроизводим: те же исходники дают тот же sha256.
-3. Перед отправкой проверьте доставку локально:
+2. В папке плагина выполните `npm run pack`. Скрипт соберёт плагин и запишет архив и
+   его запись в `registry/` этого репозитория. Он использует
+   `tools/registry-pack.cjs` из Tessera.
+3. Перед отправкой проверьте доставку локально (из папки Tessera):
 
    ```bash
    TESSERA_EXTENSIONS_DIR=/tmp/ext-test \
-   TESSERA_REGISTRY_URL=<путь>/tessera-ext/registry/registry.json \
-     node <путь>/Tessera/tools/tessera-ext.cjs install <плагин>
+   TESSERA_REGISTRY_URL=../Tessera-Ext/registry/registry.json \
+     node tools/tessera-ext.cjs install <плагин>
    ```
 
-4. Закоммитьте новый архив **вместе с** `registry.json`. Старый архив удалите, если
-   на нём не должны оставаться какие-то принтеры.
+4. Закоммитьте исходники, новый архив и `registry.json` **вместе**. Старый архив
+   удалите, если на нём не должны оставаться какие-то принтеры.
+
+Чтобы сначала проверить выпуск на своих принтерах, опубликуйте его в ветке (например,
+`dev`) и переключите эти принтеры на неё: `tessera-ext branch dev`.
 
 Как собрать плагин и какой контракт с хостом он должен соблюдать — в
 [руководстве по плагинам Tessera](https://github.com/idex-eclipse/Tessera/blob/main/docs/ru/plugin-development.md).

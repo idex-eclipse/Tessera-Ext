@@ -5,16 +5,16 @@
 Registry of reviewed, optional plugins for [Tessera](https://github.com/idex-eclipse/Tessera),
 the modular web UI for Klipper.
 
-Nothing is built on the printer. Every plugin version is published here as a prebuilt
-archive, and `registry/registry.json` records each archive's sha256. Tessera's plugin
-manager downloads an archive, checks the hash and unpacks it into
-`~/tessera/extensions/`.
+Every plugin is published here twice: its sources in `plugins/<name>/` and a prebuilt
+archive per version in `registry/`. `registry/registry.json` records each archive's
+sha256. Nothing is built on the printer: Tessera's plugin manager downloads an
+archive, checks the hash and unpacks it into `~/tessera/extensions/`.
 
 ## Plugins
 
 | Plugin | Version | What it does | Needs |
 |---|---|---|---|
-| **Spoolman** (`tessera/spoolman`) | 0.1.0 | spool per tool on the dashboard, Spoolman page, pre-print check of material and remaining filament | Moonraker `[spoolman]`; for several extruders Klipper `[save_variables]` and `T0…Tn` macros |
+| [**Spoolman**](plugins/spoolman/README.md) (`tessera/spoolman`) | 0.1.0 | spool per tool on the dashboard, Spoolman page, pre-print check of material and remaining filament | Moonraker `[spoolman]`; for several extruders Klipper `[save_variables]` and `T0…Tn` macros |
 
 ## Installing a plugin
 
@@ -32,9 +32,10 @@ first ([instructions](https://github.com/idex-eclipse/Tessera#installation)).
    ║  2) [Update]     │                                    ║
    ║  3) [Remove]     │                                    ║
    ║                  │                                    ║
+   ║  S) [Settings]   │                                    ║
    ║  R) [Refresh]    │                                    ║
    ╟──────────────────┼────────────────────────────────────╢
-   ║ Plugin API v1    │ Registry: idex-eclipse/Tessera-Ext ║
+   ║ Branch: main     │ Registry: idex-eclipse/Tessera-Ext ║
    ╟──────────────────┴────────────────────────────────────╢
    ║                        Q) Quit                        ║
    ╚═══════════════════════════════════════════════════════╝
@@ -87,10 +88,26 @@ each browser where it was enabled.
 | plugin is not in **Settings → Plugins** | press **Refresh**; if still missing, run `node ~/tessera/tools/extensions-sync.cjs` |
 | plugin is installed but the UI shows the old version | reload the page (F5) |
 
-## Other registries
+## Branches and other registries
 
-`TESSERA_REGISTRY_URL` points the plugin manager at another `registry.json`: a fork, a
-branch of this repository, or a local file for testing.
+The plugin manager reads `registry/registry.json` from the **main** branch of this
+repository. To try plugins that are not released yet, switch the branch:
+
+- in the menu: **S) Settings** → **1) [Branch]**. It lists the branches on GitHub; pick
+  one by number or name;
+- or with a command: `tessera-ext branch dev` (`tessera-ext branch` shows the current
+  one and the available ones).
+
+The choice is saved in `~/.config/tessera/tessera-ext.conf` and shown at the bottom of
+the main menu. It is independent of the Tessera branch, which is set in the `tessera`
+menu. Plugins already installed keep working after a switch. The Update menu shows
+which ones differ from the selected branch, older versions included.
+
+For one run only: `TESSERA_EXT_BRANCH=dev tessera-ext`.
+
+`TESSERA_REGISTRY_URL` points the plugin manager at any other `registry.json`: a fork,
+or a local file for testing. It overrides the branch, and the menu shows
+`Branch: custom`.
 
 ```bash
 TESSERA_REGISTRY_URL=https://raw.githubusercontent.com/<you>/Tessera-Ext/<branch>/registry/registry.json tessera-ext
@@ -101,38 +118,62 @@ TESSERA_REGISTRY_URL=https://raw.githubusercontent.com/<you>/Tessera-Ext/<branch
 ### Layout
 
 ```
+plugins/<name>/                 plugin sources: package.json, manifest.json, src/, tests
 registry/registry.json          index: id, dir, name, version, pluginApi, url, sha256, size
 registry/<dir>-<version>.tar.gz archive: manifest.json + built files at its root
 ```
 
-`url` is relative to `registry.json`, so archives are downloaded from the same place as
-the index (raw.githubusercontent.com). No GitHub Releases are needed. `.gitattributes`
-marks archives as binary: git must not change a single byte, or the sha256 check
-fails.
+Sources and archives live in the same repository: anyone can rebuild an archive from
+`plugins/<name>/` at the same commit and get the same sha256. The archive is
+reproducible: entries are sorted, timestamps and owners are zeroed.
+
+`url` is relative to `registry.json`, so archives are downloaded from the same place
+as the index (raw.githubusercontent.com). No GitHub Releases are needed.
+`.gitattributes` marks archives as binary: git must not change a single byte, or the
+sha256 check fails.
+
+### Development
+
+Clone Tessera next to this repository; plugins take the SDK types, the packer and
+the dev server from there:
+
+```
+…/Tessera/
+…/Tessera-Ext/
+```
+
+```bash
+cd Tessera-Ext/plugins/spoolman
+npm install
+npm run dev        # rebuilds on change and copies the result to Tessera/extensions/spoolman/
+npm test
+```
+
+Run Tessera's dev server (`npm run dev` in `Tessera/`) and run
+`node tools/extensions-sync.cjs` there once. The plugin then appears in
+**Settings → Plugins**. `TESSERA_ROOT=/path/to/Tessera` overrides the sibling layout
+for the build scripts. See [the Spoolman plugin](plugins/spoolman/README.md) as a
+complete example.
 
 ### Publishing a version
 
 1. Bump `version` in the plugin's `manifest.json`.
-2. In the plugin folder inside a Tessera checkout (`Tessera/extensions/<plugin>`), run:
-
-   ```bash
-   npm run pack -- . <path-to>/tessera-ext/registry
-   ```
-
-   This builds the plugin, writes the archive and adds or replaces its entry in
-   `registry.json`. The plugin's `pack` script calls Tessera's
-   `tools/registry-pack.cjs`. The archive is reproducible: the same sources give the
-   same sha256.
-3. Check the delivery locally before pushing:
+2. In the plugin folder run `npm run pack`. It builds the plugin and writes the archive
+   and its entry into this repository's `registry/`. It uses Tessera's
+   `tools/registry-pack.cjs`.
+3. Check the delivery locally before pushing (from the Tessera folder):
 
    ```bash
    TESSERA_EXTENSIONS_DIR=/tmp/ext-test \
-   TESSERA_REGISTRY_URL=<path-to>/tessera-ext/registry/registry.json \
-     node <path-to>/Tessera/tools/tessera-ext.cjs install <plugin>
+   TESSERA_REGISTRY_URL=../Tessera-Ext/registry/registry.json \
+     node tools/tessera-ext.cjs install <plugin>
    ```
 
-4. Commit the new archive **together with** `registry.json`. Delete the old archive
-   unless some printers should stay on that version.
+4. Commit the sources, the new archive and `registry.json` **together**. Delete the
+   old archive unless some printers should stay on that version.
+
+To test a release on printers first, publish it on a branch (for example `dev`) and
+switch those printers to it: `tessera-ext branch dev`.
 
 How to build a plugin, and the host contract it must follow, are described in
 [Tessera's plugin guide](https://github.com/idex-eclipse/Tessera/blob/main/docs/en/plugin-development.md).

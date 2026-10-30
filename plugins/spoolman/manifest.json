@@ -1,0 +1,42 @@
+{
+  "id": "tessera/spoolman",
+  "name": "Spoolman",
+  "version": "0.1.0",
+  "description": "Spoolman integration: spools per tool, pre-print filament check",
+  "author": "Tessera",
+  "entry": "index.js",
+  "locales": ["en", "ru"],
+
+  "pages": [
+    {
+      "id": "spoolman",
+      "titleKey": "spoolman.title",
+      "icon": "spool",
+      "element": "tessera-spoolman-page"
+    }
+  ],
+
+  "widgets": [
+    {
+      "type": "spoolman",
+      "provider": "tessera/spoolman",
+      "titleKey": "spoolman.widget.title",
+      "element": "tessera-spoolman-widget",
+      "headerElement": "tessera-spoolman-widget-header",
+      "defaultSize": { "w": 4, "h": 3 },
+      "minSize": { "w": 3, "h": 2 }
+    }
+  ],
+
+  "overlays": [
+    { "id": "spoolman-check", "element": "tessera-spoolman-overlay" }
+  ],
+
+  "guards": [
+    {
+      "id": "spoolman-print-start",
+      "match": ["printer.print.start"],
+      "handler": "guardPrintStart"
+    }
+  ]
+}
