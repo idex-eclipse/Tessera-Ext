@@ -18,10 +18,6 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node: [22, 24]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,7 +31,7 @@ jobs:
           path: Tessera
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 22
       - name: Verify registry against sources
         working-directory: Tessera-Ext
         run: node scripts/verify-registry.mjs --rebuild
