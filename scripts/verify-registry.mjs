@@ -15,6 +15,7 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, w
 import { tmpdir } from 'node:os';
 import { dirname, join, posix, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gunzipSync } from 'node:zlib';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const registryDir = join(repo, 'registry');
@@ -121,6 +122,32 @@ function checkArchive(p) {
   return dir;
 }
 
+const TAR_FIELDS = [
+  ['name', 0, 100], ['mode', 100, 8], ['uid', 108, 8], ['gid', 116, 8], ['size', 124, 12],
+  ['mtime', 136, 12], ['chksum', 148, 8], ['type', 156, 1], ['linkname', 157, 100],
+  ['magic', 257, 8], ['uname', 265, 32], ['gname', 297, 32], ['devmajor', 329, 8], ['devminor', 337, 8],
+];
+
+/** Why two archives with the same files are not the same bytes: gzip, or which tar field. */
+function describeDifference(published, rebuilt) {
+  const runtime = `Node ${process.version}, zlib ${process.versions.zlib}`;
+  const a = gunzipSync(published);
+  const b = gunzipSync(rebuilt);
+  if (a.equals(b)) {
+    return `the tar streams are identical, only gzip differs (${published.length} and ${rebuilt.length} bytes, ${runtime})`;
+  }
+  if (a.length !== b.length) return `tar sizes differ: ${a.length} and ${b.length} (${runtime})`;
+  const differences = [];
+  for (let block = 0; block < a.length; block += 512) {
+    if (a.subarray(block, block + 512).equals(b.subarray(block, block + 512))) continue;
+    const text = (buf, start, length) => buf.subarray(block + start, block + start + length).toString('latin1').replace(/\0+$/, '');
+    const fields = TAR_FIELDS.filter(([, start, length]) => text(a, start, length) !== text(b, start, length))
+      .map(([field, start, length]) => `${field}: "${text(a, start, length)}" and "${text(b, start, length)}"`);
+    differences.push(`block ${block / 512} (${text(a, 0, 100)}): ${fields.join(', ') || 'file contents'}`);
+  }
+  return `tar streams differ: ${differences.join('; ')} (${runtime})`;
+}
+
 function checkRebuild(p, unpacked) {
   const pluginDir = join(repo, 'plugins', p.dir);
   console.log(`\n=== ${p.id}: test, typecheck, build`);
@@ -151,7 +178,7 @@ function checkRebuild(p, unpacked) {
     execFileSync(process.execPath, [packer, join(pluginDir, 'dist'), '--dir', p.dir, '--url-base', '.', '--out', out, '--plugin-api', String(p.pluginApi)], { stdio: 'ignore' });
     const repacked = sha256(readFileSync(join(out, p.url)));
     if (repacked === p.sha256) console.log(`${p.id}: rebuilt archive is byte-identical (${repacked})`);
-    else warn(`${p.id}: files match, but the rebuilt archive has sha256 ${repacked} instead of ${p.sha256}`);
+    else warn(`${p.id}: files match, but the rebuilt archive has sha256 ${repacked} instead of ${p.sha256}: ${describeDifference(readFileSync(join(registryDir, p.url)), readFileSync(join(out, p.url)))}`);
   } finally {
     rmSync(out, { recursive: true, force: true });
   }
