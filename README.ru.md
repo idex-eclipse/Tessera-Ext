@@ -21,6 +21,12 @@
 Менеджер расширений входит в Tessera. Если Tessera ещё не установлен, сначала
 установите его ([инструкция](https://github.com/idex-eclipse/Tessera/blob/main/README.ru.md#installation)).
 
+Проще всего поставить плагин в интерфейсе: **Settings → Plugins → Реестр плагинов** →
+**Install**. Плагин сразу включится в этом браузере; в других браузерах его включают
+кнопкой **Install** в каталоге.
+
+То же в терминале:
+
 1. На принтере откройте менеджер расширений: `tessera-ext` или `tessera` → **E) Extensions**.
 
    ```
@@ -62,9 +68,13 @@ tessera-ext list                 # плагины реестра и что ус�
 | обновить всё | **2) Update** → **A) Update all** | `tessera-ext update --all` |
 | удалить плагин | **3) Remove** → номер → `y` | `tessera-ext remove spoolman` |
 
+В интерфейсе те же действия — кнопки **Update** и **Remove** в **Settings → Plugins →
+Реестр плагинов**. Плагины, положенные вручную, через интерфейс не заменяются и не удаляются.
+
 После обновления перезагрузите страницу UI (F5): до этого браузер использует старый
-код плагина. Удаление стирает файлы плагина; уберите его и в **Settings → Plugins** в
-каждом браузере, где он был включён.
+код плагина. Удаление стирает файлы плагина. **Remove** в интерфейсе сразу убирает плагин
+и из этого браузера; в остальных браузерах, а также после `tessera-ext remove`, уберите
+его в **Settings → Plugins**.
 
 ## Доверие
 
@@ -73,6 +83,7 @@ tessera-ext list                 # плагины реестра и что ус�
 - Менеджер расширений отказывается ставить архив, если:
   - sha256 не совпадает с `registry.json`;
   - внутри есть симлинки, абсолютные пути или `..`;
+  - он распаковывается больше чем в 100 МБ или 5000 записей;
   - `id`/`version` в манифесте отличаются от записи реестра;
   - плагину нужна более новая версия plugin API, чем у вашего Tessera.
 - Архив распаковывается в скрытую временную папку и подменяется разом, поэтому
@@ -85,7 +96,8 @@ tessera-ext list                 # плагины реестра и что ус�
 | `tessera-ext: command not found` | Tessera установлен до появления меню: `bash ~/tessera/deploy/install.sh` → **2) Update** (создаст команду) или `bash ~/tessera/deploy/install-ext.sh` |
 | `Registry: unreachable` в меню | нет интернета или GitHub недоступен. **R) Refresh** — повторить; удалять плагины можно и офлайн |
 | `sha256 mismatch` | архив и `registry.json` из разных коммитов. Сообщите об этом и не ставьте |
-| плагина нет в **Settings → Plugins** | нажмите **Refresh**; если всё равно нет — `node ~/tessera/tools/extensions-sync.cjs` |
+| плагина нет в **Settings → Plugins** | нажмите **Refresh**; если всё равно нет — `tessera-ext sync` |
+| в **Settings → Plugins** нет блока «Реестр плагинов» | выключена служба установки: `tessera` → **S) Settings** → **3) Plugins from UI**. Проверка: `systemctl status tessera-ext.socket`. Без неё плагины ставятся через `tessera-ext` |
 | плагин обновлён, а в UI старая версия | перезагрузите страницу (F5) |
 
 ## Ветки и другие реестры
@@ -165,11 +177,17 @@ npm test
    ```bash
    TESSERA_EXTENSIONS_DIR=/tmp/ext-test \
    TESSERA_REGISTRY_URL=../Tessera-Ext/registry/registry.json \
-     node tools/tessera-ext.cjs install <плагин>
+     python3 deploy/tessera-ext.py install <плагин>
    ```
+
+   Нужен Python 3.7 или новее; на Windows команда называется `python`.
 
 4. Закоммитьте исходники, новый архив и `registry.json` **вместе**. Старый архив
    удалите, если на нём не должны оставаться какие-то принтеры.
+
+CI (`.github/workflows/verify.yml`) на каждый push и pull request запускает тесты плагина,
+пересобирает его из исходников и сверяет результат с архивом и `registry.json`. Та же
+проверка локально, из корня репозитория: `node scripts/verify-registry.mjs --rebuild`.
 
 Чтобы сначала проверить выпуск на своих принтерах, опубликуйте его в ветке (например,
 `dev`) и переключите эти принтеры на неё: `tessera-ext branch dev`.

@@ -1,0 +1,37 @@
+# Printers install registry/ by its sha256, reviewers read plugins/: this checks that
+# the two are the same code. A push cannot be stopped, a pull request can (require
+# this check in the branch protection of main).
+name: verify registry
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: Tessera-Ext
+      # Plugins take host types and the packer from a sibling Tessera checkout:
+      # main for main, dev for everything else.
+      - uses: actions/checkout@v4
+        with:
+          repository: idex-eclipse/Tessera
+          ref: ${{ (github.base_ref || github.ref_name) == 'main' && 'main' || 'dev' }}
+          path: Tessera
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify registry against sources
+        working-directory: Tessera-Ext
+        run: node scripts/verify-registry.mjs --rebuild

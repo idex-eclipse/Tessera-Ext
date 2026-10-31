@@ -113,8 +113,10 @@ and `index.js`. Host types come from Tessera's `plugin-sdk/src/types.ts` as
    ```bash
    TESSERA_EXTENSIONS_DIR=/tmp/ext-test \
    TESSERA_REGISTRY_URL=../Tessera-Ext/registry/registry.json \
-     node tools/tessera-ext.cjs install spoolman
+     python3 deploy/tessera-ext.py install spoolman
    ```
+
+   This needs Python 3.7 or newer; on Windows the command is `python`.
 
 4. Commit the sources, the archive and `registry.json` together.
 

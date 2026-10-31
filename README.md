@@ -21,6 +21,12 @@ archive, checks the hash and unpacks it into `~/tessera/extensions/`.
 The plugin manager comes with Tessera. If Tessera is not installed yet, install it
 first ([instructions](https://github.com/idex-eclipse/Tessera#installation)).
 
+The easiest way is in the UI: **Settings → Plugins → Plugin registry** → **Install**. The
+plugin is enabled in this browser at once; other browsers enable it with **Install** in the
+catalog.
+
+The same in a terminal:
+
 1. On the printer, open the plugin manager: `tessera-ext`, or `tessera` → **E) Extensions**.
 
    ```
@@ -62,9 +68,13 @@ tessera-ext list                 # registry plugins and what is installed
 | update everything | **2) Update** → **A) Update all** | `tessera-ext update --all` |
 | remove a plugin | **3) Remove** → number → `y` | `tessera-ext remove spoolman` |
 
+In the UI the same actions are the **Update** and **Remove** buttons in **Settings →
+Plugins → Plugin registry**. Plugins put in place by hand cannot be replaced or deleted there.
+
 After an update, reload the UI page (F5): the browser keeps the old plugin code until
-then. Removing a plugin deletes its files; also remove it in **Settings → Plugins** in
-each browser where it was enabled.
+then. Removing a plugin deletes its files. **Remove** in the UI also removes it from this
+browser at once; in other browsers, and after `tessera-ext remove`, remove it in
+**Settings → Plugins**.
 
 ## Trust
 
@@ -73,6 +83,7 @@ each browser where it was enabled.
 - The plugin manager refuses an archive if:
   - its sha256 does not match `registry.json`;
   - it contains symlinks, absolute paths or `..`;
+  - it unpacks to more than 100 MB or 5000 entries;
   - its manifest `id`/`version` differs from the registry entry;
   - it needs a newer plugin API than your Tessera provides.
 - Archives are unpacked into a hidden staging folder and swapped in at once, so a failed
@@ -85,7 +96,8 @@ each browser where it was enabled.
 | `tessera-ext: command not found` | Tessera was installed before the menu existed: run `bash ~/tessera/deploy/install.sh` → **2) Update** (creates the command), or use `bash ~/tessera/deploy/install-ext.sh` |
 | `Registry: unreachable` in the menu | no internet, or GitHub is unavailable. **R) Refresh** retries; removing plugins works offline |
 | `sha256 mismatch` | the archive and `registry.json` come from different commits. Report it; do not install |
-| plugin is not in **Settings → Plugins** | press **Refresh**; if still missing, run `node ~/tessera/tools/extensions-sync.cjs` |
+| plugin is not in **Settings → Plugins** | press **Refresh**; if still missing, run `tessera-ext sync` |
+| no "Plugin registry" block in **Settings → Plugins** | the install service is off: `tessera` → **S) Settings** → **3) Plugins from UI**. To check: `systemctl status tessera-ext.socket`. Without it, plugins are installed with `tessera-ext` |
 | plugin is installed but the UI shows the old version | reload the page (F5) |
 
 ## Branches and other registries
@@ -166,11 +178,17 @@ complete example.
    ```bash
    TESSERA_EXTENSIONS_DIR=/tmp/ext-test \
    TESSERA_REGISTRY_URL=../Tessera-Ext/registry/registry.json \
-     node tools/tessera-ext.cjs install <plugin>
+     python3 deploy/tessera-ext.py install <plugin>
    ```
+
+   This needs Python 3.7 or newer; on Windows the command is `python`.
 
 4. Commit the sources, the new archive and `registry.json` **together**. Delete the
    old archive unless some printers should stay on that version.
+
+CI (`.github/workflows/verify.yml`) runs the plugin's tests on every push and pull request,
+rebuilds it from the sources and compares the result with the archive and `registry.json`.
+The same check locally, from the repository root: `node scripts/verify-registry.mjs --rebuild`.
 
 To test a release on printers first, publish it on a branch (for example `dev`) and
 switch those printers to it: `tessera-ext branch dev`.
