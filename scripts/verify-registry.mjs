@@ -167,8 +167,7 @@ function checkRebuild(p, unpacked) {
   }
 
   // Same files should also mean the same bytes, as the README promises. Only a warning:
-  // the files above are what matters, and byte 9 of a gzip header records the OS that
-  // packed the archive (0x0a Windows, 0x03 Linux), so bytes differ across platforms.
+  // the files above are what matters, and a future zlib may compress differently.
   const packer = join(resolve(process.env.TESSERA_ROOT ?? join(repo, '..', 'Tessera')), 'tools', 'registry-pack.cjs');
   if (!existsSync(packer)) {
     warn(`${packer} not found: archive bytes not compared`);
