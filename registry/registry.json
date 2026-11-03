@@ -2,6 +2,18 @@
   "schema": 1,
   "plugins": [
     {
+      "id": "tessera/shaketune",
+      "dir": "shaketune",
+      "name": "Shake&Tune",
+      "version": "0.1.0",
+      "description": "Klippain Shake&Tune in the Input Shaper tab of Calibrations: run its commands, read the recommendations, browse the graphs",
+      "author": "Tessera",
+      "pluginApi": 1,
+      "url": "shaketune-0.1.0.tar.gz",
+      "sha256": "83e4e429ccb496026b2e120bd37137525df57f58b66d52ccf192f8e21947bacc",
+      "size": 24411
+    },
+    {
       "id": "tessera/spoolman",
       "dir": "spoolman",
       "name": "Spoolman",
