@@ -149,6 +149,10 @@ export const styles = css`
     outline-offset: 1px;
   }
   .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
     width: 28px;
     height: 28px;
     padding: 0;
@@ -161,6 +165,8 @@ export const styles = css`
     line-height: 1;
   }
   .icon-btn:hover { background: var(--bg-surface-hover); color: var(--text-primary); }
+  .icon-btn.active { background: var(--accent); color: var(--accent-text, #fff); }
+  .icon-btn svg { display: block; }
 
   .spinner {
     width: 12px;
@@ -203,27 +209,47 @@ export const styles = css`
   }
   details.log pre .err { color: var(--danger); }
 
-  details.help { position: relative; }
-  details.help summary { list-style: none; }
-  details.help summary::-webkit-details-marker { display: none; }
-  .help-body {
-    position: absolute;
-    inset-inline-end: 0;
-    top: calc(100% + 4px);
-    z-index: 5;
-    width: min(360px, calc(100cqw - 32px));
-    max-height: 60vh;
-    overflow: auto;
-    padding: var(--space-sm) var(--space-md);
+  /*
+   * Help popover: same look as the host's HeaderHelp. It is a [popover] in the
+   * top layer (see #placeHelp in st-tab.ts); the UA style centres popovers
+   * (inset: 0; margin: auto), we drop that and set top/left/right from JS.
+   */
+  .help-menu {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    min-width: min(280px, calc(100vw - 16px));
+    max-width: min(380px, calc(100vw - 16px));
+    max-height: calc(100vh - 16px);
+    overflow-y: auto;
+    padding: var(--space-sm);
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.15));
+    color: var(--text-primary);
+    font-family: var(--font-family, inherit);
+  }
+  .help-menu:popover-open { display: flex; flex-direction: column; gap: var(--space-sm); }
+  .help-title {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+  }
+  .help-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: 0 var(--space-sm) var(--space-xs);
     font-size: var(--font-size-sm);
     color: var(--text-secondary);
+    line-height: 1.5;
   }
-  .help-body h4 { margin: var(--space-sm) 0 2px; color: var(--text-primary); font-size: var(--font-size-sm); }
-  .help-body p { margin: 0; line-height: 1.45; }
+  .help-body h4 { margin: var(--space-xs) 0 2px; color: var(--text-primary); font-size: var(--font-size-sm); font-weight: 600; }
+  .help-body p { margin: 0; }
 
   .gallery { display: flex; gap: var(--space-xs); flex-wrap: wrap; }
   .tile {

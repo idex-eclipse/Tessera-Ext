@@ -92,5 +92,5 @@ registry entry needs no `requires`.
 | `src/parse.ts` | Shake&Tune's console output → results; run boundaries; history restore |
 | `src/guard.ts` | own guard for commands the core guard does not know; own requests skip own guards |
 | `src/ui/bridge.ts` | the empty always-mounted overlay that hands the api to the guard |
-| `src/ui/styles.ts` | host theme tokens in a shadow root; why the lightbox is a native `<dialog>` |
+| `src/ui/styles.ts` | host theme tokens in a shadow root; why the lightbox is a native `<dialog>` and the help a `[popover]` (top layer) |
 | `src/index.ts` | named exports the host reads: `locales`, `hasShakeTune`, `guardShakeTune` |

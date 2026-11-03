@@ -147,6 +147,11 @@ describe('host contract', () => {
     expect(root.textContent).toContain('shaketune.title');
     expect(root.textContent).toContain('shaketune.command.shaper');
     expect(root.querySelector('code')?.textContent).toBe('AXES_SHAPER_CALIBRATION');
+    // help: a top-layer popover opened by its invoker, not a box inside the clipped panel
+    const helpBtn = root.querySelector('.help-btn')!;
+    const help = root.getElementById(helpBtn.getAttribute('popovertarget')!)!;
+    expect(help.getAttribute('popover')).toBe('auto');
+    expect(help.closest('.panel-body')).toBeNull();
     expect(fake.notifyHandlers.has('notify_gcode_response')).toBe(true);
 
     // A live console line of an external run shows up in the tab.

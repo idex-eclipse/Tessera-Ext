@@ -10,6 +10,13 @@ import { styles } from './styles';
 
 type Filter = ResultFolder | 'all';
 
+/** `help-circle` of the host's icon set (plugins/shared/icons), so our help button looks like every other. */
+const HELP_ICON = html`<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+</svg>`;
+
 /**
  * <tessera-shaketune-tab> — our contribution to `@core/calibrations#shaper`.
  *
@@ -49,6 +56,7 @@ export class ShakeTuneTab extends TesseraElement {
     previewUrl: { state: true },
     full: { state: true },
     copied: { state: true },
+    helpOpen: { state: true },
   };
 
   declare command: CommandId;
@@ -60,6 +68,7 @@ export class ShakeTuneTab extends TesseraElement {
   declare previewUrl: string | null;
   declare full: boolean;
   declare copied: string | null;
+  declare helpOpen: boolean;
 
   readonly #ctl = new StController(this);
   /** Printer whose settings are loaded into the fields. */
@@ -77,6 +86,7 @@ export class ShakeTuneTab extends TesseraElement {
     this.previewUrl = null;
     this.full = false;
     this.copied = null;
+    this.helpOpen = false;
   }
 
   override willUpdate(changed: PropertyValues<this>): void {
@@ -92,6 +102,7 @@ export class ShakeTuneTab extends TesseraElement {
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.#releasePreview();
+    this.#watchHelp(false);
     this.#settingsFor = '';
   }
 
@@ -176,6 +187,55 @@ export class ShakeTuneTab extends TesseraElement {
     this.renderRoot.querySelector('dialog')?.showModal();
   }
 
+  // ------------------------------------------------------------------ help
+
+  /**
+   * The help popover lives in the browser's TOP LAYER (Popover API), for the
+   * same reason as the lightbox: our panel clips its content (overflow: hidden)
+   * and the Calibrations page is a size container, so neither an absolute nor a
+   * fixed div of ours could leave the page area. `popover="auto"` also brings
+   * light dismiss (click outside, Esc) for free.
+   *
+   * The top layer is positioned against the viewport, so we place it next to
+   * the button ourselves — the way the host's HeaderHelp does: below the
+   * button (above if it does not fit), aligned to its end edge.
+   */
+  readonly #placeHelp = (): void => {
+    const btn = this.renderRoot.querySelector<HTMLElement>('.help-btn');
+    const menu = this.renderRoot.querySelector<HTMLElement>('.help-menu');
+    if (!btn || !menu) return;
+    const r = btn.getBoundingClientRect();
+    const mh = menu.offsetHeight;
+    const mw = menu.offsetWidth;
+    const spaceBelow = window.innerHeight - r.bottom - 4;
+    const top =
+      mh <= spaceBelow ? r.bottom + 4 : mh <= r.top - 4 ? r.top - 4 - mh : Math.max(8, window.innerHeight - mh - 8);
+    menu.style.top = `${top}px`;
+    if (document.documentElement.getAttribute('dir') === 'rtl') {
+      menu.style.left = `${Math.min(Math.max(8, r.left), Math.max(8, window.innerWidth - mw - 8))}px`;
+      menu.style.right = 'auto';
+    } else {
+      const right = Math.min(Math.max(8, window.innerWidth - r.right), Math.max(8, window.innerWidth - mw - 8));
+      menu.style.right = `${right}px`;
+      menu.style.left = 'auto';
+    }
+  };
+
+  #watchHelp(on: boolean): void {
+    window.removeEventListener('resize', this.#placeHelp);
+    document.removeEventListener('scroll', this.#placeHelp, true);
+    if (!on) return;
+    window.addEventListener('resize', this.#placeHelp);
+    // capture: the page scrolls in the host's container, not in the window
+    document.addEventListener('scroll', this.#placeHelp, true);
+  }
+
+  #onHelpToggle(e: Event): void {
+    this.helpOpen = (e as ToggleEvent).newState === 'open';
+    if (this.helpOpen) this.#placeHelp();
+    this.#watchHelp(this.helpOpen);
+  }
+
   /** Why Run is not possible now, or null. Our own requests skip our guard (see guard.ts), so we check here. */
   #blocked(): string | null {
     const ctl = this.#ctl;
@@ -212,9 +272,18 @@ export class ShakeTuneTab extends TesseraElement {
   }
 
   #renderHelp(): TemplateResult {
+    const title = this.t('shaketune.help.title');
+    // popovertarget (not a click handler): a click on the invoker while the
+    // popover is open closes it instead of light-dismissing and reopening it.
     return html`
-      <details class="help">
-        <summary class="icon-btn" title=${this.t('shaketune.help.title')} aria-label=${this.t('shaketune.help.title')}>?</summary>
+      <button
+        class="icon-btn help-btn ${this.helpOpen ? 'active' : ''}"
+        popovertarget="st-help"
+        title=${title}
+        aria-label=${title}
+      >${HELP_ICON}</button>
+      <div id="st-help" class="help-menu" popover="auto" role="dialog" aria-label=${title} @toggle=${this.#onHelpToggle}>
+        <div class="help-title">${title}</div>
         <div class="help-body">
           <h4>${this.t('shaketune.help.switchTitle')}</h4>
           <p>${this.t('shaketune.help.switch')}</p>
@@ -225,7 +294,7 @@ export class ShakeTuneTab extends TesseraElement {
           <h4>${this.t('shaketune.help.resultsTitle')}</h4>
           <p>${this.t('shaketune.help.results')}</p>
         </div>
-      </details>
+      </div>
     `;
   }
 
