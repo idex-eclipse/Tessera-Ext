@@ -1,0 +1,33 @@
+{
+  "id": "tessera/shaketune",
+  "name": "Shake&Tune",
+  "version": "0.1.0",
+  "description": "Klippain Shake&Tune in the Input Shaper tab of Calibrations: run its commands, read the recommendations, browse the graphs",
+  "author": "Tessera",
+  "entry": "index.js",
+  "locales": ["en", "ru"],
+
+  "extensions": [
+    {
+      "point": "@core/calibrations#shaper",
+      "kind": "tab",
+      "version": 1,
+      "id": "shaketune",
+      "titleKey": "shaketune.title",
+      "element": "tessera-shaketune-tab",
+      "available": "hasShakeTune"
+    }
+  ],
+
+  "overlays": [
+    { "id": "shaketune-bridge", "element": "tessera-shaketune-bridge" }
+  ],
+
+  "guards": [
+    {
+      "id": "shaketune-safety",
+      "match": ["printer.gcode.script"],
+      "handler": "guardShakeTune"
+    }
+  ]
+}
