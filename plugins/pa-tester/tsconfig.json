@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+
+    // No decorators: Lit elements here declare reactive properties through
+    // `static properties` + `declare` fields. That works the same under tsc,
+    // esbuild and vitest without any decorator settings, and `declare` keeps
+    // class fields from shadowing Lit's generated accessors
+    // (useDefineForClassFields is on for ES2022).
+
+    // Host contracts are imported as TYPES ONLY (`import type`), so nothing
+    // from the host ends up in the bundle. The path expects a Tessera checkout
+    // next to this repository (…/Tessera and …/Tessera-Ext), the same layout
+    // vite.config.ts and scripts/pack.mjs assume (TESSERA_ROOT overrides theirs).
+    "paths": {
+      "@tessera/sdk": ["../../../Tessera/plugin-sdk/src/types.ts"]
+    }
+  },
+  "include": ["src"]
+}

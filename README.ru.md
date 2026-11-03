@@ -16,6 +16,7 @@
 |---|---|---|---|
 | [**Spoolman**](plugins/spoolman/README.md) (`tessera/spoolman`) | 0.1.0 | катушка на каждый инструмент на дашборде, страница Spoolman, проверка материала и остатка филамента перед печатью | `[spoolman]` в Moonraker; для нескольких экструдеров — `[save_variables]` в Klipper и макросы `T0…Tn` |
 | [**Shake&Tune**](plugins/shaketune/README.md) (`tessera/shaketune`) | 0.1.3 | Klippain Shake&Tune во вкладке Input Shaper калибровок: тесты с параметрами, рекомендованные шейперы с «Применить», ремни, вибрации, оси акселерометра, графики | `[shaketune]` в Klipper (Shake&Tune v4+), `[resonance_tester]` и акселерометр |
+| [**Pressure Advance tester**](plugins/pa-tester/README.md) (`tessera/pa-tester`) | 0.1.0 | Klipper `pa_tester` во вкладке Pressure Advance калибровок: `TEST_PRESSURE_ADVANCE` / `PA_CALIBRATE` с параметрами, результат, живой график датчика усилия | `[pa_tester]` в Klipper (ветка generic-cartesian форка dmbutyugin), NumPy и датчик усилия; Tessera с plugin API 0.9 |
 
 ## Установка плагина
 

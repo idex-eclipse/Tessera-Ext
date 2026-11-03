@@ -2,6 +2,24 @@
   "schema": 1,
   "plugins": [
     {
+      "id": "tessera/pa-tester",
+      "dir": "pa-tester",
+      "name": "Pressure Advance tester",
+      "version": "0.1.0",
+      "description": "Klipper pa_tester in a Pressure Advance tab of Calibrations: run the measurement, read the result, watch the load cell live",
+      "author": "Tessera",
+      "pluginApi": "0.9",
+      "requires": [
+        "@core/calibrations"
+      ],
+      "dependencies": {
+        "@core/calibrations": "3.0.0"
+      },
+      "url": "pa-tester-0.1.0.tar.gz",
+      "sha256": "44f1cf00e6b6d1d79a5ced2d4f64fe261cd95d1879830856ba4727ef1e4ce459",
+      "size": 53737
+    },
+    {
       "id": "tessera/shaketune",
       "dir": "shaketune",
       "name": "Shake&Tune",

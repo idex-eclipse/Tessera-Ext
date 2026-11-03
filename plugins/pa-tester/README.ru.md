@@ -1,0 +1,94 @@
+# Плагин Tessera: Pressure Advance tester
+
+[English version](README.md)
+
+Опциональный плагин Tessera для модуля Klipper **`pa_tester`** (подбор Pressure Advance по
+датчику усилия в сопле). Добавляет вкладку **Pressure Advance** на страницу калибровок
+(встроенный плагин *Calibrations*) через точку расширения `@core/calibrations#tabs` и живой
+график датчика усилия. Написан на [Lit](https://lit.dev), как плагин Shake&Tune.
+
+| Поверхность | Что делает |
+|---|---|
+| Дополнение `@core/calibrations#tabs` (вкладка, append) | `TEST_PRESSURE_ADVANCE` / `PA_CALIBRATE` с параметрами, только читаемое превью G-code, подтверждение перед изменением PA, разобранный результат и живой график датчика усилия |
+| Оверлей (пустой) | с запуска приложения держит api плагина доступным гарду |
+| Гард `printer.gcode.script` | `TEST_PRESSURE_ADVANCE` и `PA_CALIBRATE` от других плагинов (консоль, макросы) отклоняются во время печати, при непарковнутых осях и холодном экструдере |
+
+## Требования
+
+- Модуль `pa_tester` в Klipper: секция `[pa_tester]` в `printer.cfg`. Он находится в ветке
+  `generic-cartesian` форка dmbutyugin/klipper, **в основном Klipper его нет**. Нужны NumPy
+  в окружении Klipper и датчик усилия (`[load_cell]` или `[load_cell_probe]`) в сопле;
+  `max_extrude_cross_section` в `[extruder]` должен допускать большой расход.
+- Tessera с plugin API **0.9** или новее (для потока графика, см. ниже) и
+  `@core/calibrations` 3.0.0 или новее. На более старую Tessera `tessera-ext` плагин не ставит.
+
+Без `[pa_tester]` вкладка не показывается. Без датчика усилия она показывается с
+пояснением, а **Run** заблокирован.
+
+## Команды
+
+| Кнопка | Команда | Действие |
+|---|---|---|
+| Тест | `TEST_PRESSURE_ADVANCE` | измеряет и показывает результат |
+| Калибровка | `PA_CALIBRATE` | измеряет и применяет результат через `SET_PRESSURE_ADVANCE` (просит подтверждение) |
+
+Методы: `step_response` (PA по каждому расходу и общий) и `search_overshoot` (поиск в
+`PA_RANGE`). `METHOD` отправляется всегда, поэтому превью показывает то, что реально
+запустится. Остальные поля уходят только заполненными: `SLOW_FLOW`, `HIGH_FLOW`,
+`PURGE_LENGTH`, `SEGMENT_TIME`, `TEST_REPETITIONS`, `FILTER_WINDOW`, `EXTRUDE_FORCE_SIGN`,
+`PA_RANGE`, `EXTRUDER`, `FORCE_SENSOR`. Подсказки в полях — значения вашей `[pa_tester]`.
+Границы те же, что в модуле (`high_flow` больше `slow_flow`, `PA_RANGE` меньше 2.0, …):
+неверное значение помечается, команда не отправляется.
+
+Модуль не пишет файлов с результатом. Всё читается из консоли: вживую из
+`notify_gcode_response`, а при открытии вкладки во время запуска, начатого в другом месте,
+из `server.gcode_store`. **Применить** после теста отправляет `SET_PRESSURE_ADVANCE` (пропадает
+при перезапуске: впишите значение в `[extruder] pressure_advance`).
+
+Гард работает для команд из консоли Tessera. Команды извне (Mainsail, Fluidd, веб-интерфейсы
+KAPAT/autopa, терминал) идут мимо него.
+
+## График датчика усилия
+
+График строится [uPlot](https://github.com/leeoniya/uPlot), той же библиотекой, что вкладка
+*Heaters*. Данные — вебхук Klipper `load_cell/dump_force`: **каждый отсчёт датчика**, десятки
+и сотни в секунду. Moonraker отдаёт его только на raw-мосту `/klippysocket`, поэтому плагин
+просит его у хоста через `handle.klippyStream(…)` (plugin API 0.9): сокет открывает и ведёт
+хост. Сайт nginx Tessera проксирует `/klippysocket` так же, как `/websocket` (добавляется в
+`install.sh`; на существующей установке выполните *Update* Tessera).
+
+- Поток включён, только пока график показан и страница браузера видима. У Klipper нет
+  отписки: хост закрывает сокет, когда уходит последний слушатель. Забытый поток нагружает
+  Klipper, поэтому скрывайте график, когда он не нужен.
+- Если мост недоступен (нет `/klippysocket` в nginx, mixed content на HTTPS), график
+  переходит на обычную подписку на статус, около 4 отсчётов в секунду, и показывает это
+  значком.
+- Без калибровки датчик не отдаёт граммы: тогда график показывает отсчёты относительно тары.
+
+## Разработка
+
+Исходники лежат в репозитории реестра, `Tessera-Ext/plugins/pa-tester/`. Склонируйте Tessera
+рядом; сборка и проверка типов рассчитаны на такую раскладку (`TESSERA_ROOT` переопределяет
+её для сборки и `pack`):
+
+```
+…/Tessera/                        хост (dev-сервер, типы plugin-sdk, registry-pack.cjs)
+…/Tessera-Ext/plugins/pa-tester/  этот плагин
+```
+
+```bash
+npm install
+npm run dev        # vite build --watch → dist/ и Tessera/extensions/pa-tester/
+npm test           # парсер, команды, состояние запуска, источник графика + контракт хоста
+npm run typecheck
+```
+
+В Tessera один раз выполните `node tools/extensions-sync.cjs`, чтобы каталог показал плагин.
+Далее Settings → Plugins → Install «Pressure Advance tester», после правок кода — F5.
+
+## Публикация
+
+Поднимите `version` в `manifest.json`, выполните `npm run pack` (собирает и пишет
+`registry/pa-tester-<version>.tar.gz` и запись в `registry.json`), затем
+`node scripts/verify-registry.mjs` в корне репозитория; исходники, архив и `registry.json`
+коммитятся вместе.
