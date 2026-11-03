@@ -2,6 +2,60 @@
   "schema": 1,
   "plugins": [
     {
+      "id": "tessera/pa-autotune",
+      "dir": "pa-autotune",
+      "name": "PA Autotune",
+      "version": "0.1.0",
+      "description": "autopa and KAPAT (load cell Pressure Advance auto-calibration) in a PA Autotune tab of Calibrations: picks the installed provider and embeds its web UI",
+      "author": "Tessera",
+      "pluginApi": "0.8",
+      "requires": [
+        "@core/calibrations"
+      ],
+      "dependencies": {
+        "@core/calibrations": "3.0.0"
+      },
+      "url": "pa-autotune-0.1.0.tar.gz",
+      "sha256": "262b7ff05a0859a75d3184e1817c9df97544fca01bf7a2f9165d3c7998ef18db",
+      "size": 15522
+    },
+    {
+      "id": "tessera/pa-tester",
+      "dir": "pa-tester",
+      "name": "Pressure Advance tester",
+      "version": "0.2.0",
+      "description": "Klipper pa_tester in a Pressure Advance tab of Calibrations: run the measurement, read the result, watch the load cell live",
+      "author": "Tessera",
+      "pluginApi": "0.9",
+      "requires": [
+        "@core/calibrations"
+      ],
+      "dependencies": {
+        "@core/calibrations": "3.0.0"
+      },
+      "url": "pa-tester-0.2.0.tar.gz",
+      "sha256": "909c127c667dc34915387198cbace9e58aa3a68c5712bdc22ed054d4d8227474",
+      "size": 54928
+    },
+    {
+      "id": "tessera/shaketune",
+      "dir": "shaketune",
+      "name": "Shake&Tune",
+      "version": "0.1.3",
+      "description": "Klippain Shake&Tune in the Input Shaper tab of Calibrations: run its commands, read the recommendations, browse the graphs",
+      "author": "Tessera",
+      "pluginApi": "0.8",
+      "requires": [
+        "@core/calibrations"
+      ],
+      "dependencies": {
+        "@core/calibrations": "3.0.0"
+      },
+      "url": "shaketune-0.1.3.tar.gz",
+      "sha256": "57b2614829721488a0112472bfe52087b732aee2c854c778d8b5d695137cabe3",
+      "size": 25490
+    },
+    {
       "id": "tessera/spoolman",
       "dir": "spoolman",
       "name": "Spoolman",

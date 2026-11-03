@@ -1,0 +1,222 @@
+import { LitElement, css, html, nothing, unsafeCSS, type PropertyValues, type TemplateResult } from 'lit';
+import uPlot from 'uplot';
+import uplotCss from 'uplot/dist/uPlot.min.css?inline';
+
+import type { ForceUnit } from '../force-parse';
+import type { SeriesBuffer } from '../series-buffer';
+
+/**
+ * <tessera-pa-force-chart> — rolling trace of the load cell, drawn with uPlot.
+ *
+ * The host's own chart (plugins/shared/uplot-core) is a Svelte component and
+ * cannot be imported by a remote plugin, so this is the same idea on Lit: a
+ * fixed window that ends "now", x axis in seconds before the last sample, the
+ * theme taken from the host's CSS custom properties.
+ *
+ * The data lives in a SeriesBuffer owned by the tab. The tab calls
+ * `requestUpdate()` through the `version` property after pushing samples; the
+ * element redraws at most once per animation frame, however fast the sensor
+ * is. uPlot's CSS is bundled as a string and adopted into the shadow root.
+ *
+ * Colours are read from computed style when the chart is built (uPlot paints on
+ * a canvas, so CSS cannot reach it): `restyle()` rebuilds it after a theme change.
+ */
+export class PaForceChart extends LitElement {
+  static override styles = [
+    unsafeCSS(uplotCss),
+    css`
+      :host { display: block; position: relative; min-width: 0; }
+      .wrap { width: 100%; height: var(--pa-chart-height, 220px); }
+      .u-legend { display: none; }
+      .readout {
+        position: absolute;
+        top: 4px;
+        inset-inline-end: 8px;
+        padding: 1px 6px;
+        border-radius: var(--radius-sm, 4px);
+        background: var(--bg-surface, #fff);
+        border: 1px solid var(--border-color, #ccc);
+        color: var(--text-primary);
+        font-size: var(--font-size-sm, 12px);
+        font-variant-numeric: tabular-nums;
+        pointer-events: none;
+      }
+      .empty {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-muted);
+        font-size: var(--font-size-sm, 12px);
+        pointer-events: none;
+        text-align: center;
+        padding: var(--space-md, 12px);
+      }
+    `,
+  ];
+
+  static override properties = {
+    buffer: { attribute: false },
+    version: { type: Number },
+    unit: { type: String },
+    seconds: { type: Number },
+    emptyText: { type: String },
+    paused: { type: Boolean },
+    readout: { state: true },
+  };
+
+  declare buffer: SeriesBuffer | null;
+  declare version: number;
+  declare unit: ForceUnit;
+  declare seconds: number;
+  declare emptyText: string;
+  declare paused: boolean;
+  declare readout: string;
+
+  #plot: uPlot | null = null;
+  #frame = 0;
+  #resize: ResizeObserver | null = null;
+  /** Last data given to uPlot (the cursor readout looks values up in it). */
+  #data: [number[], number[]] = [[], []];
+
+  constructor() {
+    super();
+    this.buffer = null;
+    this.version = 0;
+    this.unit = 'g';
+    this.seconds = 30;
+    this.emptyText = '';
+    this.paused = false;
+    this.readout = '';
+  }
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.#resize = new ResizeObserver(() => this.#fit());
+    this.#resize.observe(this);
+  }
+
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.#resize?.disconnect();
+    this.#resize = null;
+    if (this.#frame) cancelAnimationFrame(this.#frame);
+    this.#frame = 0;
+    this.#destroy();
+  }
+
+  /** Rebuilds the chart with the current theme colours. */
+  restyle(): void {
+    this.#destroy();
+    this.#schedule();
+  }
+
+  override updated(changed: PropertyValues<this>): void {
+    if (changed.has('seconds') || changed.has('unit')) this.restyle();
+    else if (changed.has('version') || changed.has('paused')) this.#schedule();
+  }
+
+  #schedule(): void {
+    if (this.#frame || this.paused) return;
+    this.#frame = requestAnimationFrame(() => {
+      this.#frame = 0;
+      this.#draw();
+    });
+  }
+
+  #color(name: string, fallback: string): string {
+    return getComputedStyle(this).getPropertyValue(name).trim() || fallback;
+  }
+
+  #destroy(): void {
+    this.#plot?.destroy();
+    this.#plot = null;
+  }
+
+  #fit(): void {
+    const el = this.renderRoot.querySelector<HTMLElement>('.wrap');
+    if (!el || el.clientWidth === 0) return;
+    if (this.#plot) this.#plot.setSize({ width: el.clientWidth, height: el.clientHeight });
+    else this.#schedule();
+  }
+
+  #build(el: HTMLElement): uPlot {
+    const line = this.#color('--accent', '#3b82f6');
+    const axis = this.#color('--text-muted', '#888');
+    const grid = this.#color('--border-color', '#8884');
+    const unit = this.unit === 'g' ? 'g' : 'counts';
+    const minSpan = this.unit === 'g' ? 2 : 25;
+
+    const opts: uPlot.Options = {
+      width: Math.max(el.clientWidth, 200),
+      height: Math.max(el.clientHeight, 120),
+      legend: { show: false },
+      cursor: { drag: { x: false, y: false }, points: { size: 6 } },
+      scales: {
+        x: { time: false, range: () => [-this.seconds, 0] },
+        y: {
+          range: (_u, min, max) => {
+            if (!Number.isFinite(min) || !Number.isFinite(max)) return [-1, 1];
+            const span = Math.max(max - min, minSpan);
+            const mid = (max + min) / 2;
+            return [mid - span * 0.6, mid + span * 0.6];
+          },
+        },
+      },
+      axes: [
+        {
+          stroke: axis,
+          grid: { stroke: grid, width: 1 },
+          ticks: { stroke: grid },
+          values: (_u, ticks) => ticks.map((t) => `${t}s`),
+        },
+        {
+          stroke: axis,
+          grid: { stroke: grid, width: 1 },
+          ticks: { stroke: grid },
+          size: 56,
+          label: unit,
+          labelSize: 14,
+        },
+      ],
+      series: [{}, { stroke: line, width: 1.5, points: { show: false } }],
+      hooks: {
+        setCursor: [
+          (u) => {
+            const i = u.cursor.idx;
+            const v = i == null ? undefined : this.#data[1][i];
+            this.readout = v === undefined ? '' : `${v.toFixed(this.unit === 'g' ? 2 : 0)} ${unit}`;
+          },
+        ],
+      },
+    };
+    return new uPlot(opts, this.#data, el);
+  }
+
+  #draw(): void {
+    const el = this.renderRoot.querySelector<HTMLElement>('.wrap');
+    const buf = this.buffer;
+    if (!el || !buf) return;
+
+    const times = buf.times();
+    const last = times[times.length - 1] ?? 0;
+    // x = seconds before the newest sample (≤ 0), so the window always ends at the right edge.
+    this.#data = [times.map((t) => t - last), buf.values()];
+
+    if (!this.#plot) {
+      if (el.clientWidth === 0) return; // not laid out yet; ResizeObserver will call #fit
+      this.#plot = this.#build(el);
+    }
+    this.#plot.setData(this.#data);
+  }
+
+  override render(): TemplateResult {
+    const empty = !this.buffer || this.buffer.length === 0;
+    return html`
+      <div class="wrap"></div>
+      ${this.readout ? html`<span class="readout">${this.readout}</span>` : nothing}
+      ${empty && this.emptyText ? html`<div class="empty">${this.emptyText}</div>` : nothing}
+    `;
+  }
+}

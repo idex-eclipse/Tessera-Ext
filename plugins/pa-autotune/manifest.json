@@ -1,0 +1,34 @@
+{
+  "id": "tessera/pa-autotune",
+  "name": "PA Autotune",
+  "version": "0.1.0",
+  "description": "autopa and KAPAT (load cell Pressure Advance auto-calibration) in a PA Autotune tab of Calibrations: picks the installed provider and embeds its web UI",
+  "author": "Tessera",
+  "entry": "index.js",
+  "pluginApi": "0.8",
+  "dependencies": { "@core/calibrations": "3.0.0" },
+  "locales": ["en", "ru"],
+
+  "extensions": [
+    {
+      "point": "@core/calibrations#tabs",
+      "kind": "tab",
+      "version": 1,
+      "id": "pa-autotune",
+      "titleKey": "paautotune.tabTitle",
+      "element": "tessera-pa-autotune-tab"
+    }
+  ],
+
+  "overlays": [
+    { "id": "pa-autotune-bridge", "element": "tessera-pa-autotune-bridge" }
+  ],
+
+  "guards": [
+    {
+      "id": "pa-autotune-safety",
+      "match": ["printer.gcode.script"],
+      "handler": "guardPaAutotune"
+    }
+  ]
+}
