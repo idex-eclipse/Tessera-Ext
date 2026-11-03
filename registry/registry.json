@@ -2,6 +2,24 @@
   "schema": 1,
   "plugins": [
     {
+      "id": "tessera/pa-autotune",
+      "dir": "pa-autotune",
+      "name": "PA Autotune",
+      "version": "0.1.0",
+      "description": "autopa and KAPAT (load cell Pressure Advance auto-calibration) in a PA Autotune tab of Calibrations: picks the installed provider and embeds its web UI",
+      "author": "Tessera",
+      "pluginApi": "0.8",
+      "requires": [
+        "@core/calibrations"
+      ],
+      "dependencies": {
+        "@core/calibrations": "3.0.0"
+      },
+      "url": "pa-autotune-0.1.0.tar.gz",
+      "sha256": "262b7ff05a0859a75d3184e1817c9df97544fca01bf7a2f9165d3c7998ef18db",
+      "size": 15522
+    },
+    {
       "id": "tessera/pa-tester",
       "dir": "pa-tester",
       "name": "Pressure Advance tester",
