@@ -15,7 +15,7 @@ archive, checks the hash and unpacks it into `~/tessera/extensions/`.
 | Plugin | Version | What it does | Needs |
 |---|---|---|---|
 | [**Spoolman**](plugins/spoolman/README.md) (`tessera/spoolman`) | 0.1.0 | spool per tool on the dashboard, Spoolman page, pre-print check of material and remaining filament | Moonraker `[spoolman]`; for several extruders Klipper `[save_variables]` and `T0…Tn` macros |
-| [**Shake&Tune**](plugins/shaketune/README.md) (`tessera/shaketune`) | 0.1.0 | Klippain Shake&Tune in the Input Shaper tab of Calibrations: tests with their parameters, recommended shapers with Apply, belts, vibrations, axes map, graphs | Klipper `[shaketune]` (Shake&Tune v4+), `[resonance_tester]` and an accelerometer |
+| [**Shake&Tune**](plugins/shaketune/README.md) (`tessera/shaketune`) | 0.1.1 | Klippain Shake&Tune in the Input Shaper tab of Calibrations: tests with their parameters, recommended shapers with Apply, belts, vibrations, axes map, graphs | Klipper `[shaketune]` (Shake&Tune v4+), `[resonance_tester]` and an accelerometer |
 
 ## Installing a plugin
 
