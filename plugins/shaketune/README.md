@@ -79,6 +79,10 @@ check the delivery with `deploy/tessera-ext.py install shaketune`, commit source
 archive and `registry.json` together. The plugin extends only a core point, so its
 registry entry needs no `requires`.
 
+`pluginApi` in `manifest.json` is `"0.8"`: the Tessera plugin API that brought extension
+points and `@core/calibrations#shaper`. An older Tessera refuses to install the plugin
+instead of showing nothing.
+
 ## How it plugs into Tessera
 
 | File | Integration point |

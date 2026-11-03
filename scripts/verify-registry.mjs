@@ -24,6 +24,11 @@ const rebuild = process.argv.includes('--rebuild');
 const DIR_NAME_RE = /^[a-z0-9][a-z0-9._-]{0,63}$/i;
 const SHA256_RE = /^[0-9a-f]{64}$/;
 const MAX_ARCHIVE_BYTES = 20 * 1024 * 1024;
+// Plugin API "MAJOR.MINOR" (Tessera plugin-sdk/src/api-level.ts). Registry entries of the
+// first releases carry the integer 1, a manifest without the field is the same: "0.7".
+const PLUGIN_API_RE = /^(0|[1-9]\d{0,3})\.(0|[1-9]\d{0,3})$/;
+const normalizePluginApi = (v) =>
+  v === undefined || v === 1 ? '0.7' : typeof v === 'string' && PLUGIN_API_RE.test(v) ? v : null;
 
 let failures = 0;
 function fail(message) {
@@ -67,7 +72,7 @@ function checkEntryFields(p) {
   let ok = true;
   if (!DIR_NAME_RE.test(p.dir)) { fail(`${p.id}: invalid dir "${p.dir}"`); ok = false; }
   if (!SHA256_RE.test(p.sha256)) { fail(`${p.id}: invalid sha256 "${p.sha256}"`); ok = false; }
-  if (!Number.isInteger(p.pluginApi) || p.pluginApi < 1) { fail(`${p.id}: invalid pluginApi ${p.pluginApi}`); ok = false; }
+  if (!normalizePluginApi(p.pluginApi)) { fail(`${p.id}: invalid pluginApi ${JSON.stringify(p.pluginApi)}`); ok = false; }
   // Printers download archives next to registry.json, and only those can be reviewed here.
   if (p.url !== posix.basename(p.url) || p.url !== `${p.dir}-${p.version}.tar.gz`) {
     fail(`${p.id}: url must be "${p.dir}-${p.version}.tar.gz", got "${p.url}"`);
@@ -115,6 +120,10 @@ function checkArchive(p) {
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
   if (manifest.id !== p.id || manifest.version !== p.version) {
     fail(`${p.id}: archive manifest is ${manifest.id}@${manifest.version}, registry.json says ${p.id}@${p.version}`);
+  }
+  // Printers check the entry, browsers the manifest: they must agree.
+  if (normalizePluginApi(manifest.pluginApi) !== normalizePluginApi(p.pluginApi)) {
+    fail(`${p.id}: archive manifest needs plugin API ${JSON.stringify(manifest.pluginApi)}, registry.json says ${JSON.stringify(p.pluginApi)}`);
   }
   if (typeof manifest.entry !== 'string' || !existsSync(join(dir, manifest.entry))) {
     fail(`${p.id}: manifest.entry "${manifest.entry}" is not in the archive`);
@@ -175,7 +184,7 @@ function checkRebuild(p, unpacked) {
   }
   const out = mkdtempSync(join(tmpdir(), 'tessera-repack-'));
   try {
-    execFileSync(process.execPath, [packer, join(pluginDir, 'dist'), '--dir', p.dir, '--url-base', '.', '--out', out, '--plugin-api', String(p.pluginApi)], { stdio: 'ignore' });
+    execFileSync(process.execPath, [packer, join(pluginDir, 'dist'), '--dir', p.dir, '--url-base', '.', '--out', out], { stdio: 'ignore' });
     const repacked = sha256(readFileSync(join(out, p.url)));
     if (repacked === p.sha256) console.log(`${p.id}: rebuilt archive is byte-identical (${repacked})`);
     else warn(`${p.id}: files match, but the rebuilt archive has sha256 ${repacked} instead of ${p.sha256}: ${describeDifference(readFileSync(join(registryDir, p.url)), readFileSync(join(out, p.url)))}`);

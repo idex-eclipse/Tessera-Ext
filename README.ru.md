@@ -15,7 +15,7 @@
 | Плагин | Версия | Что делает | Что нужно |
 |---|---|---|---|
 | [**Spoolman**](plugins/spoolman/README.md) (`tessera/spoolman`) | 0.1.0 | катушка на каждый инструмент на дашборде, страница Spoolman, проверка материала и остатка филамента перед печатью | `[spoolman]` в Moonraker; для нескольких экструдеров — `[save_variables]` в Klipper и макросы `T0…Tn` |
-| [**Shake&Tune**](plugins/shaketune/README.md) (`tessera/shaketune`) | 0.1.1 | Klippain Shake&Tune во вкладке Input Shaper калибровок: тесты с параметрами, рекомендованные шейперы с «Применить», ремни, вибрации, оси акселерометра, графики | `[shaketune]` в Klipper (Shake&Tune v4+), `[resonance_tester]` и акселерометр |
+| [**Shake&Tune**](plugins/shaketune/README.md) (`tessera/shaketune`) | 0.1.2 | Klippain Shake&Tune во вкладке Input Shaper калибровок: тесты с параметрами, рекомендованные шейперы с «Применить», ремни, вибрации, оси акселерометра, графики | `[shaketune]` в Klipper (Shake&Tune v4+), `[resonance_tester]` и акселерометр |
 
 ## Установка плагина
 

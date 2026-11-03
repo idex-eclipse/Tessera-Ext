@@ -1,10 +1,11 @@
 {
   "id": "tessera/shaketune",
   "name": "Shake&Tune",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Klippain Shake&Tune in the Input Shaper tab of Calibrations: run its commands, read the recommendations, browse the graphs",
   "author": "Tessera",
   "entry": "index.js",
+  "pluginApi": "0.8",
   "locales": ["en", "ru"],
 
   "extensions": [
