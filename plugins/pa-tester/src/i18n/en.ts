@@ -12,10 +12,21 @@ export default {
       default: 'default',
       noPrinter: 'No active printer',
       configError: 'Cannot read the printer config. Is Klipper ready?',
-      notInstalled: 'The [pa_tester] section is not in the printer config any more.',
       copy: 'Copy',
       copied: 'Copied',
       copyManually: 'Copy the text:',
+    },
+    install: {
+      title: 'pa_tester is not set up',
+      intro:
+        'This tab drives the Klipper module pa_tester, which measures Pressure Advance with a load cell in the nozzle. There is no [pa_tester] section in the printer config.',
+      noLoadCell: 'No [load_cell] or [load_cell_probe] in the printer config either: the module needs a load cell in the nozzle.',
+      recheck: 'Check again',
+      stepModule: 'The module is not in mainline Klipper. It lives in the generic-cartesian branch of the fork:',
+      stepNumpy: 'It needs NumPy in the Klipper Python environment.',
+      stepConfig: 'Add the section to printer.cfg (high_flow and purge_length are required; see the module source for the rest):',
+      stepExtruder: 'In [extruder], max_extrude_cross_section must allow the high flow.',
+      stepRestart: 'Restart Klipper completely: sudo systemctl restart klipper. The tab picks the module up by itself afterwards.',
     },
     help: {
       title: 'Help',

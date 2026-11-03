@@ -3,8 +3,7 @@
  *
  * `export type` is erased at build time: the plugin never imports runtime code
  * from the host. Everything the plugin gets from Tessera arrives at runtime
- * through the `api` property the host sets on our Custom Elements (and as the
- * first argument of the `available` export, see availability.ts).
+ * through the `api` property the host sets on our Custom Elements.
  */
 export type {
   GuardContext,

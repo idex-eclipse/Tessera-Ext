@@ -137,7 +137,8 @@ describe('host contract', () => {
     const manifest = (await import('../../manifest.json')).default;
     for (const e of manifest.extensions) {
       expect(customElements.get(e.element), e.element).toBeDefined();
-      expect(typeof (mod as Record<string, unknown>)[e.available]).toBe('function');
+      // Always shown: without [pa_tester] the tab explains what to add.
+      expect('available' in e).toBe(false);
       expect(e.point).toBe('@core/calibrations#tabs');
       expect(e.kind).toBe('tab');
     }
@@ -158,12 +159,30 @@ describe('host contract', () => {
     expect(await guard('PA_CALIBRATE')).toEqual({ action: 'allow' });
   });
 
-  it('available follows the [pa_tester] section', async () => {
+  it('has no availability export any more', () => {
+    expect((mod as Record<string, unknown>).hasPaTester).toBeUndefined();
+  });
+
+  it('without [pa_tester] the tab shows instructions, no graph stream, and picks the module up on check', async () => {
     const saved = settings;
-    expect(await mod.hasPaTester(fake.api)).toBe(true);
-    settings = { printer: {} };
-    expect(await mod.hasPaTester(fake.api)).toBe(false);
+    settings = { printer: {}, extruder: { min_extrude_temp: 170 } };
+    fake.streams.length = 0;
+    const el = await mount('tessera-pa-tester-tab');
+    const root = el.shadowRoot!;
+    expect(root.textContent).toContain('patester.install.title');
+    expect(root.textContent).toContain('patester.install.noLoadCell');
+    expect(root.querySelector('a')?.getAttribute('href')).toContain('dmbutyugin/klipper');
+    expect(root.textContent).not.toContain('patester.run.test');
+    expect(fake.streams).toHaveLength(0);
+
     settings = saved;
+    [...root.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'patester.install.recheck')!.click();
+    await flush();
+    await el.updateComplete;
+    expect(root.textContent).toContain('patester.run.test');
+    expect(root.textContent).not.toContain('patester.install.title');
+    el.remove();
+    fake.streams.length = 0; // the graph of the recognised module opened one
   });
 
   it('guard: pa_tester commands only — not while printing, unhomed or cold', async () => {

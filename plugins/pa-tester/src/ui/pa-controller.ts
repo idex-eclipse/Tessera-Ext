@@ -233,6 +233,11 @@ export class PaController implements ReactiveController {
     this.#handle = null;
   }
 
+  /** Reads the printer config again (the "Check again" button of the not-installed panel). */
+  recheck(): Promise<void> {
+    return this.#loadConfig();
+  }
+
   async #loadConfig(): Promise<void> {
     const handle = this.#handle;
     const pid = this.#printerId;

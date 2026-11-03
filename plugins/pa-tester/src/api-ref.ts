@@ -3,12 +3,11 @@ import type { PluginApi } from './sdk';
 /**
  * Module-level reference to this plugin's PluginApi.
  *
- * WHY: the host hands `api` to Custom Elements (as a property) and to the
- * `available` export (as an argument). The guard handler is a plain module
+ * WHY: the host hands `api` to Custom Elements (as a property). The guard handler is a plain module
  * export called as `(request, token, ctx)` — it receives NO api. So whoever
  * gets the api first stores it here and the guard reads it.
  *
- * Our tab is mounted only while the user looks at the Input Shaper tab, which
+ * Our tab is mounted only while the user looks at the Pressure Advance tab, which
  * may be never in a session — yet a pa_tester command typed in the console
  * must still be checked. That is why the plugin also has an always-mounted,
  * empty overlay (`tessera-pa-tester-bridge`, see index.ts): the host mounts it

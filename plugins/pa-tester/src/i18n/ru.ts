@@ -11,10 +11,21 @@ export default {
       default: 'по умолчанию',
       noPrinter: 'Нет активного принтера',
       configError: 'Не удалось прочитать конфигурацию принтера. Klipper готов?',
-      notInstalled: 'Секции [pa_tester] больше нет в конфигурации принтера.',
       copy: 'Копировать',
       copied: 'Скопировано',
       copyManually: 'Скопируйте текст:',
+    },
+    install: {
+      title: 'pa_tester не настроен',
+      intro:
+        'Эта вкладка управляет модулем Klipper pa_tester, который измеряет Pressure Advance по датчику усилия в сопле. В конфигурации принтера нет секции [pa_tester].',
+      noLoadCell: 'Нет и [load_cell] или [load_cell_probe]: модулю нужен датчик усилия в сопле.',
+      recheck: 'Проверить снова',
+      stepModule: 'Модуля нет в основной ветке Klipper. Он лежит в ветке generic-cartesian форка:',
+      stepNumpy: 'Ему нужен NumPy в Python-окружении Klipper.',
+      stepConfig: 'Добавьте секцию в printer.cfg (high_flow и purge_length обязательны; остальное — в исходниках модуля):',
+      stepExtruder: 'В [extruder] max_extrude_cross_section должен допускать высокий расход.',
+      stepRestart: 'Полностью перезапустите Klipper: sudo systemctl restart klipper. После этого вкладка подхватит модуль сама.',
     },
     help: {
       title: 'Справка',

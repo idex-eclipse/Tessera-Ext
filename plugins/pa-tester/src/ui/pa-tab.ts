@@ -24,6 +24,9 @@ const HELP_ICON = html`<svg width="15" height="15" viewBox="0 0 24 24" fill="non
 
 const CHART_WINDOWS = [30, 60, 120] as const;
 
+/** pa_tester is not in mainline Klipper: it lives in this branch of the dmbutyugin fork. */
+const PA_TESTER_BRANCH_URL = 'https://github.com/dmbutyugin/klipper/tree/generic-cartesian';
+
 const fmt = (n: number | null | undefined, digits = 4): string => (n === null || n === undefined ? '—' : n.toFixed(digits));
 
 /**
@@ -130,7 +133,7 @@ export class PaTesterTab extends TesseraElement {
 
   #hasSensor(): boolean {
     const config = this.#ctl.state.config;
-    return Boolean(config && pickLoadCell(config, this.values.FORCE_SENSOR ?? ''));
+    return Boolean(config?.hasPaTester && pickLoadCell(config, this.values.FORCE_SENSOR ?? ''));
   }
 
   // ---------------------------------------------------------------- actions
@@ -262,14 +265,43 @@ export class PaTesterTab extends TesseraElement {
         <p class="muted">${s.configError ? this.t('patester.common.configError') : this.t('patester.common.loading')}</p>
       </div></section>`;
     }
-    if (!s.config.hasPaTester) {
-      // The host does not mount us without [pa_tester] (see availability.ts);
-      // this covers the section being removed while the tab is open.
-      return html`<section class="panel"><div class="panel-body">
-        <p class="warn">${this.t('patester.common.notInstalled')}</p>
-      </div></section>`;
-    }
+    if (!s.config.hasPaTester) return this.#renderNotInstalled(s.config.loadCells.length > 0);
     return html`${this.#renderRunPanel()}${this.#renderChartPanel()}${this.#renderConfirm()}`;
+  }
+
+  /**
+   * No `[pa_tester]` section. The tab is always shown (no `available` export),
+   * so this is what the user finds: where the module lives and what to add.
+   * The config is re-read on `notify_klippy_ready` / `notify_config_changed`
+   * (PaController), and by the button for the impatient.
+   */
+  #renderNotInstalled(hasLoadCell: boolean): TemplateResult {
+    return html`<section class="panel">
+      <div class="panel-header">
+        <span class="panel-title">${this.t('patester.install.title')}</span>
+        <button type="button" class="btn" @click=${() => void this.#ctl.recheck()}>${this.t('patester.install.recheck')}</button>
+      </div>
+      <div class="panel-body">
+        <p>${this.t('patester.install.intro')}</p>
+        ${hasLoadCell ? nothing : html`<p class="warn">${this.t('patester.install.noLoadCell')}</p>`}
+        <ol class="steps">
+          <li>
+            ${this.t('patester.install.stepModule')}
+            <a href=${PA_TESTER_BRANCH_URL} target="_blank" rel="noopener noreferrer">dmbutyugin/klipper (generic-cartesian)</a>
+          </li>
+          <li>${this.t('patester.install.stepNumpy')}</li>
+          <li>
+            ${this.t('patester.install.stepConfig')}
+            <code class="gcode">[pa_tester]
+force_sensor: load_cell
+high_flow: 12
+purge_length: 30</code>
+          </li>
+          <li>${this.t('patester.install.stepExtruder')}</li>
+          <li>${this.t('patester.install.stepRestart')}</li>
+        </ol>
+      </div>
+    </section>`;
   }
 
   #renderHelp(): TemplateResult {

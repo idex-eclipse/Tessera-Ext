@@ -23,8 +23,10 @@ graph of the load cell. Written in [Lit](https://lit.dev), like the Shake&Tune p
 - Tessera with plugin API **0.9** or newer (for the graph stream, see below) and
   `@core/calibrations` 3.0.0 or newer. `tessera-ext` refuses to install on an older Tessera.
 
-On a printer without `[pa_tester]` the tab is not shown. Without a load cell it is shown
-with an explanation and **Run** is blocked.
+The tab is always in Calibrations. On a printer without `[pa_tester]` it shows how to set the
+module up (the fork branch, NumPy, the section to add, a full Klipper restart) and a **Check
+again** button; it also looks again by itself after a Klipper restart or config change. Without a
+load cell the tab is shown with an explanation and **Run** is blocked.
 
 ## Commands
 
@@ -100,7 +102,7 @@ Bump `version` in `manifest.json`, run `npm run pack` (builds and writes
 
 | File | Integration point |
 |---|---|
-| `manifest.json` | `extensions[]`: point `@core/calibrations#tabs`, kind `tab`, `available` export; `pluginApi: "0.9"` |
+| `manifest.json` | `extensions[]`: point `@core/calibrations#tabs`, kind `tab`, no `available` (always shown); `pluginApi: "0.9"` |
 | `src/ui/pa-tab.ts` | the contribution itself: a whole tab, command form, preview, result, graph panel |
 | `src/ui/pa-controller.ts` | Moonraker subscriptions bound to the element and the active printer; owns the graph source |
 | `src/force-source.ts` | `klippyStream` of the host, with the status subscription as fallback |

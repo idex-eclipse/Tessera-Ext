@@ -4,8 +4,6 @@
  * The host loads it with `import(entryUrl)` and then reads these NAMED EXPORTS:
  *
  *   locales         → merged into the host dictionary; api.i18n.t('patester.…')
- *   hasPaTester     → manifest extensions[].available: is the contribution
- *                     usable on the active printer ([pa_tester] configured)?
  *   guardPaTester   → manifest guards[].handler, called by the GuardAgent
  *
  * Importing the module must also REGISTER every Custom Element named in
@@ -15,8 +13,10 @@
  *
  * The plugin adds a NEW TAB to the Calibrations page through the extension
  * point `@core/calibrations#tabs`. Nothing in it talks to Calibrations: the
- * manifest names the point, the host checks kind/version, asks `hasPaTester`
- * and mounts our element with OUR api. See base-element.ts and ui/pa-tab.ts.
+ * manifest names the point, the host checks kind/version and mounts our
+ * element with OUR api. There is no `available` export: the tab is always
+ * shown, and explains how to get `[pa_tester]` when it is missing. See
+ * base-element.ts and ui/pa-tab.ts.
  */
 import { defineElement } from './base-element';
 import en from './i18n/en';
@@ -31,7 +31,6 @@ defineElement('tessera-pa-tester-tab', PaTesterTab);
 defineElement('tessera-pa-tester-bridge', PaTesterBridge);
 defineElement('tessera-pa-force-chart', PaForceChart);
 
-export { hasPaTester } from './availability';
 export { guardPaTester } from './guard';
 
 export const locales = { en, ru };

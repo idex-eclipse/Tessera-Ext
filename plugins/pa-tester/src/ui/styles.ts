@@ -253,6 +253,10 @@ export const styles = css`
 
   .gcode-row { display: flex; gap: var(--space-sm); align-items: stretch; }
   .gcode-row .gcode { flex: 1; min-width: 0; }
+  ol.steps { margin: 0; padding-inline-start: 1.4em; display: flex; flex-direction: column; gap: var(--space-xs); }
+  ol.steps li { color: var(--text-secondary); font-size: var(--font-size-sm); }
+  ol.steps li .gcode { margin-top: 2px; }
+  a { color: var(--accent); }
   .row.end { justify-content: flex-end; }
   b { font-weight: 600; }
 
