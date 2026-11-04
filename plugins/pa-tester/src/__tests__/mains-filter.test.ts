@@ -56,6 +56,24 @@ describe('mains filter', () => {
     expect(f.active).toBe(false);
   });
 
+  it('trusts the reported sample rate over the estimate, from the first sample', () => {
+    const one = [{ time: 0, value: 5 }];
+    const slow = new MainsFilter(50);
+    slow.setSampleRate(80);
+    expect(slow.process(one)).toEqual(one);
+    expect(slow.active).toBe(false);
+
+    const fast = new MainsFilter(50);
+    fast.setSampleRate(1000);
+    fast.process(one);
+    expect(fast.active).toBe(true);
+
+    // a rate that goes away falls back to the estimate (here: a 1 kHz stream)
+    slow.setSampleRate(null);
+    slow.process(hum(50, 0.1));
+    expect(slow.active).toBe(true);
+  });
+
   it('filters a whole series, returning the input itself when it cannot act', () => {
     const fast = hum(50, 0.3);
     const r = mainsFilterSeries(50, fast.map((s) => s.time), fast.map((s) => s.value));
@@ -84,7 +102,7 @@ describe('force source with the mains filter', () => {
     const onSamples = vi.fn();
     const onMains = vi.fn();
     let hz: 0 | 60 = 60;
-    startForceSource({ klippyStream } as never, probe, { onSamples, onSource: vi.fn(), onMains }, undefined, () => hz);
+    startForceSource({ klippyStream, subscribe: vi.fn(() => () => {}) } as never, probe, { onSamples, onSource: vi.fn(), onMains }, undefined, () => hz);
 
     push({ data: rows });
     const filtered = onSamples.mock.calls[0]![0] as Array<{ value: number }>;
@@ -97,5 +115,45 @@ describe('force source with the mains filter', () => {
     push({ data: hum(60, 0.2).map((s) => [s.time + 1, s.value, 0, 0]) });
     const raw = (onSamples.mock.calls[0]![0] as Array<{ value: number }>).map((s) => s.value);
     expect(Math.max(...raw) - Math.min(...raw)).toBeGreaterThan(0.1);
+  });
+
+  it('reads the sensor sample rate only while the mains filter is on', () => {
+    let push: (d: unknown) => void = () => {};
+    const klippyStream = vi.fn((_m: string, _p: unknown, onData: (d: unknown) => void) => {
+      push = onData;
+      return () => {};
+    });
+    let deliver: (d: unknown) => void = () => {};
+    const off = vi.fn();
+    const subscribe = vi.fn((_f: unknown, cb: (d: unknown) => void) => {
+      deliver = cb;
+      return off;
+    });
+    const onMains = vi.fn();
+    let hz: 0 | 50 = 0;
+    const stop = startForceSource({ klippyStream, subscribe } as never, probe, { onSamples: vi.fn(), onSource: vi.fn(), onMains }, undefined, () => hz);
+
+    push({ data: [[0, 1, 0, 0]] });
+    expect(subscribe).not.toHaveBeenCalled();
+
+    hz = 50;
+    push({ data: [[1, 1, 0, 0]] });
+    expect(subscribe).toHaveBeenCalledTimes(1);
+    expect(subscribe.mock.calls[0]![0]).toEqual({ [probe.section]: ['sample_rate'] });
+
+    // the status says the sensor runs at 80 Hz: too slow, even before two samples are seen
+    deliver({ [probe.section]: { sample_rate: 80 } });
+    push({ data: [[2, 1, 0, 0]] });
+    expect(onMains).toHaveBeenLastCalledWith(false);
+
+    hz = 0;
+    push({ data: [[3, 1, 0, 0]] });
+    expect(off).toHaveBeenCalledTimes(1);
+
+    hz = 50;
+    push({ data: [[4, 1, 0, 0]] });
+    expect(subscribe).toHaveBeenCalledTimes(2);
+    stop();
+    expect(off).toHaveBeenCalledTimes(2);
   });
 });

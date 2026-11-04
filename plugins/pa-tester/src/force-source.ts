@@ -45,6 +45,9 @@ export function startForceSource(
   mains: () => MainsHz | 0 = () => 0,
 ): () => void {
   let comb: MainsFilter | null = null;
+  let stopRate: (() => void) | null = null;
+  /** `sample_rate` from the status of the sensor, Hz; 0 until known. */
+  let sampleRate = 0;
   let stopStream: (() => void) | null = null;
   let stopStatus: (() => void) | null = null;
   let stopped = false;
@@ -71,6 +74,27 @@ export function startForceSource(
     stopStatus = null;
   };
 
+  // The sensor reports its sample rate in its status. It is read only while the mains filter
+  // is on, and tells the filter whether the sensor can represent the hum at all.
+  const watchRate = (on: boolean): void => {
+    if (on && !stopRate && !stopped) {
+      stopRate = handle.subscribe(
+        { [loadCell.section]: ['sample_rate'] },
+        (delta: Record<string, { sample_rate?: unknown } | undefined>) => {
+          const r = delta?.[loadCell.section]?.sample_rate;
+          if (typeof r !== 'number' || !Number.isFinite(r) || r <= 0) return;
+          sampleRate = r;
+          comb?.setSampleRate(r);
+        },
+        { immediate: true },
+      );
+    } else if (!on && stopRate) {
+      stopRate();
+      stopRate = null;
+      sampleRate = 0;
+    }
+  };
+
   if (typeof handle.klippyStream !== 'function') {
     startStatus();
   } else {
@@ -82,8 +106,12 @@ export function startForceSource(
         if (!batch.samples.length) return;
         let samples = batch.samples;
         const hz = mains();
+        watchRate(hz !== 0);
         if (hz) {
-          if (!comb || comb.period !== 1 / hz) comb = new MainsFilter(hz);
+          if (!comb || comb.period !== 1 / hz) {
+            comb = new MainsFilter(hz);
+            comb.setSampleRate(sampleRate);
+          }
           samples = comb.process(samples);
           sink.onMains?.(comb.active);
         } else {
@@ -108,6 +136,8 @@ export function startForceSource(
     stopped = true;
     stopStream?.();
     stopStream = null;
+    stopRate?.();
+    stopRate = null;
     endStatus();
   };
 }

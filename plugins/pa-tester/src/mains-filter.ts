@@ -42,6 +42,8 @@ export class MainsFilter {
   #lastTime: number | null = null;
   /** Smoothed time between samples, seconds; 0 until two samples were seen. */
   #spacing = 0;
+  /** Sample rate reported by the sensor (`sample_rate` in its status), Hz; 0 when unknown. */
+  #rate = 0;
   #active = true;
 
   constructor(hz: MainsHz) {
@@ -53,11 +55,21 @@ export class MainsFilter {
     return this.#active;
   }
 
+  /**
+   * Tells the filter the sensor's own sample rate. A known rate beats the estimate made from
+   * timestamps: it is right from the first sample, even when batches hold a single one.
+   * Pass null or a non-positive value to fall back to the estimate.
+   */
+  setSampleRate(hz: number | null): void {
+    this.#rate = hz !== null && Number.isFinite(hz) && hz > 0 ? hz : 0;
+  }
+
   /** Filters one batch (ascending times). */
   process(samples: readonly ForceSample[]): ForceSample[] {
     if (samples.length === 0) return [];
 
     // estimate the sample rate first so a whole batch is either filtered or passed through
+    // (the estimate keeps running so it is ready if the reported rate goes away)
     for (const s of samples) {
       if (this.#lastTime !== null) {
         const dt = s.time - this.#lastTime;
@@ -65,7 +77,8 @@ export class MainsFilter {
       }
       this.#lastTime = s.time;
     }
-    this.#active = this.#spacing === 0 || this.period / this.#spacing >= MIN_SAMPLES_PER_PERIOD;
+    const spacing = this.#rate ? 1 / this.#rate : this.#spacing;
+    this.#active = spacing === 0 || this.period / spacing >= MIN_SAMPLES_PER_PERIOD;
     if (!this.#active) {
       this.#reset();
       return samples.slice();
