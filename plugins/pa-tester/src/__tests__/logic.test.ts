@@ -196,7 +196,7 @@ describe('force source', () => {
     const sink = { onSamples: vi.fn(), onSource: vi.fn() };
     const stop = startForceSource(handleWith({ klippyStream }), cell, sink);
 
-    expect(klippyStream).toHaveBeenCalledWith('load_cell/dump_force', { load_cell: 'foo' }, expect.any(Function), expect.any(Function));
+    expect(klippyStream).toHaveBeenCalledWith('load_cell/dump_force', { sensor: 'foo' }, expect.any(Function), expect.any(Function));
     onStatus('live');
     expect(sink.onSource).toHaveBeenLastCalledWith('stream', 'live');
     onData({ data: [[1, 5, 0, 0]] });

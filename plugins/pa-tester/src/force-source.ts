@@ -76,7 +76,7 @@ export function startForceSource(
   } else {
     stopStream = handle.klippyStream(
       'load_cell/dump_force',
-      { load_cell: loadCell.name },
+      { sensor: loadCell.name },
       (params) => {
         const batch = parseForceBatch(params);
         if (!batch.samples.length) return;

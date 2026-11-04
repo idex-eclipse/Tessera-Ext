@@ -223,7 +223,7 @@ describe('host contract', () => {
     // The live graph asks the host for the stream, by the name of the only load cell.
     expect(fake.streams).toHaveLength(1);
     expect(fake.streams[0]!.method).toBe('load_cell/dump_force');
-    expect(fake.streams[0]!.params).toEqual({ load_cell: 'load_cell' });
+    expect(fake.streams[0]!.params).toEqual({ sensor: 'load_cell' });
     fake.streams[0]!.onStatus('live');
     fake.streams[0]!.onData({ data: [[1, 12.5, 0, 0], [1.01, 13.5, 0, 0] /* one 20 ms bin: averaged */] });
     await el.updateComplete;
