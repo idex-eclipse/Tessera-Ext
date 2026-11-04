@@ -70,6 +70,23 @@ rerun *Update* of Tessera on an existing installation).
 - Without calibration the cell reports no grams: the graph then shows counts relative to
   the tare.
 
+### Filters
+
+The filters change only what is drawn; the buffer keeps what the sensor sent, so switching
+is instant. The window is set in milliseconds (20 to 2000).
+
+- **Raw**, **Average** (fixed windows), **Moving average**, **Moving median** (drops single
+  spikes without blurring edges) and **Min/max envelope** (two lines: minimum in the theme's
+  cold colour, maximum in the heat colour, so the noise stays visible).
+- *Show raw* draws the unfiltered trace faintly under a filtered one.
+- **Mains filter** (50 or 60 Hz) can be combined with any of the above. It is a moving average
+  over exactly one mains period: it nulls the mains frequency and all its harmonics and keeps
+  the force level. It runs on the sensor's own samples, before they are binned, so it needs
+  a fast sensor (at least 4 samples per mains period, about 200 Hz or more). On a slow
+  sensor (for example HX711 at 10 to 80 Hz) hum cannot be removed, the samples pass through
+  unchanged and a badge says so; the same holds for the ≈4 Hz status fallback. Switching it
+  restarts the trace.
+
 ## Development
 
 The sources live in the registry repository, `Tessera-Ext/plugins/pa-tester/`. Clone

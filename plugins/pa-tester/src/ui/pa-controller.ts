@@ -3,6 +3,7 @@ import type { ReactiveController } from 'lit';
 import type { TesseraElement } from '../base-element';
 import { startForceSource, type SourceKind, type SourceState } from '../force-source';
 import type { ForceUnit } from '../force-parse';
+import type { MainsHz } from '../mains-filter';
 import { normalizeLines } from '../parse';
 import { pickLoadCell, readPrinterConfig } from '../printer-config';
 import {
@@ -39,6 +40,8 @@ export interface ChartInfo {
   kind: SourceKind | null;
   state: SourceState;
   unit: ForceUnit;
+  /** False when the mains filter had nothing to act on (sensor too slow). */
+  mainsActive: boolean;
 }
 
 /** The longest window the chart can show; the buffer keeps this much. */
@@ -77,11 +80,12 @@ export class PaController implements ReactiveController {
   readonly buffer = new SeriesBuffer(CHART_MAX_SECONDS, 8000);
   /** Bumped after every push so the chart element redraws. */
   version = 0;
-  chart: ChartInfo = { kind: null, state: 'connecting', unit: 'g' };
+  chart: ChartInfo = { kind: null, state: 'connecting', unit: 'g', mainsActive: true };
   #chartWanted = false;
   #sensorChoice = '';
   #stopChart: (() => void) | null = null;
   #chartKey = '';
+  #mains: MainsHz | 0 = 0;
 
   constructor(host: TesseraElement) {
     this.#host = host;
@@ -307,6 +311,19 @@ export class PaController implements ReactiveController {
     this.#syncChart();
   }
 
+  /**
+   * Switches the mains filter (`hz` 0 = off). It acts on the incoming stream, so samples
+   * already in the buffer keep the old setting: start the trace over rather than mix them.
+   */
+  setMains(hz: MainsHz | 0): void {
+    if (hz === this.#mains) return;
+    this.#mains = hz;
+    this.buffer.clear();
+    this.chart = { ...this.chart, mainsActive: true };
+    this.version++;
+    this.#host.requestUpdate();
+  }
+
   clearChart(): void {
     this.buffer.clear();
     this.version++;
@@ -332,25 +349,36 @@ export class PaController implements ReactiveController {
 
     this.#chartKey = key;
     this.buffer.clear();
-    this.chart = { kind: null, state: 'connecting', unit: this.chart.unit };
-    this.#stopChart = startForceSource(handle, cell, {
-      onSamples: (samples, unit) => {
-        // The unit flips when the cell gets calibrated mid-stream: old points would lie.
-        if (unit !== this.chart.unit) {
-          this.buffer.clear();
-          this.chart = { ...this.chart, unit };
-        }
-        for (const s of samples) this.buffer.push(s.time, s.value);
-        this.version++;
-        this.#host.requestUpdate();
+    this.chart = { kind: null, state: 'connecting', unit: this.chart.unit, mainsActive: true };
+    this.#stopChart = startForceSource(
+      handle,
+      cell,
+      {
+        onSamples: (samples, unit) => {
+          // The unit flips when the cell gets calibrated mid-stream: old points would lie.
+          if (unit !== this.chart.unit) {
+            this.buffer.clear();
+            this.chart = { ...this.chart, unit };
+          }
+          for (const s of samples) this.buffer.push(s.time, s.value);
+          this.version++;
+          this.#host.requestUpdate();
+        },
+        onSource: (kind, state) => {
+          // Stream times are the printer's clock, status times ours: never mix them.
+          if (this.chart.kind !== null && this.chart.kind !== kind) this.buffer.clear();
+          this.chart = { ...this.chart, kind, state };
+          this.#host.requestUpdate();
+        },
+        onMains: (active) => {
+          if (active === this.chart.mainsActive) return;
+          this.chart = { ...this.chart, mainsActive: active };
+          this.#host.requestUpdate();
+        },
       },
-      onSource: (kind, state) => {
-        // Stream times are the printer's clock, status times ours: never mix them.
-        if (this.chart.kind !== null && this.chart.kind !== kind) this.buffer.clear();
-        this.chart = { ...this.chart, kind, state };
-        this.#host.requestUpdate();
-      },
-    });
+      undefined,
+      () => this.#mains,
+    );
     this.#host.requestUpdate();
   }
 

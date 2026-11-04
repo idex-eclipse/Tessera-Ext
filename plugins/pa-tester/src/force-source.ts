@@ -1,4 +1,5 @@
 import { binSamples, parseForceBatch, type ForceSample, type ForceUnit } from './force-parse';
+import { MainsFilter, type MainsHz } from './mains-filter';
 import type { LoadCellInfo } from './printer-config';
 import type { MoonrakerProxyHandle } from './sdk';
 
@@ -24,17 +25,26 @@ export interface ForceSink {
   /** New samples (already binned for the chart) and their unit. */
   onSamples(samples: ForceSample[], unit: ForceUnit): void;
   onSource(kind: SourceKind, state: SourceState): void;
+  /** Whether the mains filter could act on the data (false: sensor too slow, or status fallback). */
+  onMains?(active: boolean): void;
 }
 
 /** Chart resolution: samples closer than this are averaged. */
 export const BIN_SECONDS = 0.02;
 
+/**
+ * `mains` is read for every batch (the user can toggle it while the stream runs) and returns
+ * the mains frequency to filter out, or 0 for none. The filter runs on the sensor's own
+ * samples, before they are binned for the chart.
+ */
 export function startForceSource(
   handle: MoonrakerProxyHandle,
   loadCell: LoadCellInfo,
   sink: ForceSink,
   clock: () => number = () => performance.now() / 1000,
+  mains: () => MainsHz | 0 = () => 0,
 ): () => void {
+  let comb: MainsFilter | null = null;
   let stopStream: (() => void) | null = null;
   let stopStatus: (() => void) | null = null;
   let stopped = false;
@@ -48,6 +58,8 @@ export function startForceSource(
         const g = delta?.[loadCell.section]?.force_g;
         if (typeof g !== 'number' || !Number.isFinite(g)) return;
         sink.onSource('status', 'live');
+        // about 4 Hz cannot represent mains hum: report that the filter has nothing to act on
+        sink.onMains?.(false);
         sink.onSamples([{ time: clock(), value: g }], 'g');
       },
       { immediate: true },
@@ -67,7 +79,17 @@ export function startForceSource(
       { load_cell: loadCell.name },
       (params) => {
         const batch = parseForceBatch(params);
-        if (batch.samples.length) sink.onSamples(binSamples(batch.samples, BIN_SECONDS), batch.unit);
+        if (!batch.samples.length) return;
+        let samples = batch.samples;
+        const hz = mains();
+        if (hz) {
+          if (!comb || comb.period !== 1 / hz) comb = new MainsFilter(hz);
+          samples = comb.process(samples);
+          sink.onMains?.(comb.active);
+        } else {
+          comb = null;
+        }
+        sink.onSamples(binSamples(samples, BIN_SECONDS), batch.unit);
       },
       (state) => {
         if (stopped) return;

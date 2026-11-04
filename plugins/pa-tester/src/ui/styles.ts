@@ -112,6 +112,20 @@ export const styles = css`
     font-size: var(--font-size-sm);
   }
   .field.invalid input { border-color: var(--danger); }
+  input.num { inline-size: 7rem; }
+  /* checkbox rows and uncaptioned controls sit on the baseline of the captioned fields */
+  .check {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    align-self: flex-end;
+    min-height: 32px;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+  }
+  .end { align-self: flex-end; }
+  .chip.warn-chip { border-color: var(--warning); color: var(--warning); white-space: normal; }
 
   .gcode {
     display: block;
@@ -286,6 +300,6 @@ export const styles = css`
   }
   @media (pointer: coarse) {
     .icon-btn { width: 36px; height: 36px; }
-    .sel-btn, .btn { min-height: 36px; }
+    .sel-btn, .btn, .check, select, input.num { min-height: 36px; }
   }
 `;

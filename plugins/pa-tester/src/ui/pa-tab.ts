@@ -10,6 +10,17 @@ import {
   setPaCommand,
   type CommandId,
 } from '../commands';
+import {
+  applyFilter,
+  clampFilterMs,
+  FILTER_KINDS,
+  FILTER_MS_DEFAULT,
+  FILTER_MS_MAX,
+  FILTER_MS_MIN,
+  parseFilterKind,
+  type FilterKind,
+} from '../force-filter';
+import { MAINS_HZ, parseMainsHz, type MainsHz } from '../mains-filter';
 import type { PaMethod } from '../parse';
 import { pickLoadCell } from '../printer-config';
 import type { PaForceChart } from './force-chart';
@@ -45,7 +56,7 @@ const fmt = (n: number | null | undefined, digits = 4): string => (n === null ||
  * trace of the force sensor, the way the Heaters tab draws a temperature).
  *
  * Settings (`api.settings`, per printer): command, method, field values, the
- * state and window of the chart.
+ * state, window, display filter and mains filter of the chart.
  */
 export class PaTesterTab extends TesseraElement {
   static override styles = styles;
@@ -58,6 +69,11 @@ export class PaTesterTab extends TesseraElement {
     chartOpen: { state: true },
     chartSeconds: { state: true },
     chartPaused: { state: true },
+    chartFilter: { state: true },
+    chartFilterMs: { state: true },
+    chartRaw: { state: true },
+    chartMains: { state: true },
+    chartMainsHz: { state: true },
     copied: { state: true },
     helpOpen: { state: true },
   };
@@ -68,6 +84,11 @@ export class PaTesterTab extends TesseraElement {
   declare chartOpen: boolean;
   declare chartSeconds: number;
   declare chartPaused: boolean;
+  declare chartFilter: FilterKind;
+  declare chartFilterMs: number;
+  declare chartRaw: boolean;
+  declare chartMains: boolean;
+  declare chartMainsHz: MainsHz;
   declare copied: string | null;
   declare helpOpen: boolean;
 
@@ -85,6 +106,11 @@ export class PaTesterTab extends TesseraElement {
     this.chartOpen = true;
     this.chartSeconds = 30;
     this.chartPaused = false;
+    this.chartFilter = 'raw';
+    this.chartFilterMs = FILTER_MS_DEFAULT;
+    this.chartRaw = false;
+    this.chartMains = false;
+    this.chartMainsHz = 50;
     this.copied = null;
     this.helpOpen = false;
   }
@@ -104,6 +130,7 @@ export class PaTesterTab extends TesseraElement {
     }
     // The trace runs only while the panel is open (see PaController).
     this.#ctl.setChart(this.chartOpen && this.#hasSensor(), this.values.FORCE_SENSOR ?? '');
+    this.#ctl.setMains(this.chartMains ? this.chartMainsHz : 0);
   }
 
   override disconnectedCallback(): void {
@@ -125,6 +152,11 @@ export class PaTesterTab extends TesseraElement {
     this.chartOpen = s.get<boolean>('chartOpen') ?? true;
     const sec = s.get<number>('chartSeconds');
     this.chartSeconds = CHART_WINDOWS.includes(sec as 30) ? sec! : 30;
+    this.chartFilter = parseFilterKind(s.get<string>('chartFilter'));
+    this.chartFilterMs = clampFilterMs(s.get<number>('chartFilterMs'));
+    this.chartRaw = s.get<boolean>('chartRaw') ?? false;
+    this.chartMains = s.get<boolean>('chartMains') ?? false;
+    this.chartMainsHz = parseMainsHz(s.get<number>('chartMainsHz'));
   }
 
   #save(key: string, value: unknown): void {
@@ -161,6 +193,64 @@ export class PaTesterTab extends TesseraElement {
   #setSeconds(s: number): void {
     this.chartSeconds = s;
     this.#save('chartSeconds', s);
+  }
+
+  #setFilter(kind: FilterKind): void {
+    this.chartFilter = kind;
+    this.#save('chartFilter', kind);
+  }
+
+  #setFilterMs(raw: number): void {
+    // an empty or invalid field is ignored until the user types a number
+    if (!Number.isFinite(raw)) return;
+    this.chartFilterMs = clampFilterMs(raw);
+    this.#save('chartFilterMs', this.chartFilterMs);
+  }
+
+  #setRaw(on: boolean): void {
+    this.chartRaw = on;
+    this.#save('chartRaw', on);
+  }
+
+  #setMains(on: boolean): void {
+    this.chartMains = on;
+    this.#save('chartMains', on);
+  }
+
+  #setMainsHz(hz: MainsHz): void {
+    this.chartMainsHz = hz;
+    this.#save('chartMainsHz', hz);
+  }
+
+  /** Memo of the filtered extremes: the tab renders on every batch, the filter should not rerun for that. */
+  #extremes: { key: string; min: number; max: number } | null = null;
+
+  /**
+   * Min / max of the drawn trace: the raw window, or the filtered curve (for the envelope
+   * its lower and upper lines). Null when there is nothing to show.
+   */
+  #traceRange(): { min: number; max: number } | null {
+    const buf = this.#ctl.buffer;
+    if (this.chartFilter === 'raw') return buf.range();
+    if (buf.length === 0) return null;
+    const key = `${this.#ctl.version}|${this.#ctl.printerId}|${this.chartFilter}|${this.chartFilterMs}`;
+    if (this.#extremes?.key !== key) {
+      const cols = applyFilter(this.chartFilter, this.chartFilterMs, buf.times(), buf.values()).cols;
+      const lower = cols[0]!;
+      const upper = cols[cols.length - 1]!;
+      let min = Infinity;
+      let max = -Infinity;
+      for (let i = 0; i < lower.length; i++) {
+        if (lower[i]! < min) min = lower[i]!;
+        if (upper[i]! > max) max = upper[i]!;
+      }
+      this.#extremes = { key, min, max };
+    }
+    return this.#extremes;
+  }
+
+  #filterName(k: FilterKind): string {
+    return this.t(`patester.chart.filter_${k}`);
   }
 
   #request(): void {
@@ -532,7 +622,7 @@ purge_length: 30</code>
     const config = ctl.state.config!;
     const cell = pickLoadCell(config, this.values.FORCE_SENSOR ?? '');
     const last = ctl.buffer.last();
-    const range = ctl.buffer.range();
+    const range = this.#traceRange();
     const unit = ctl.chart.unit === 'g' ? 'g' : this.t('patester.chart.counts');
     const digits = ctl.chart.unit === 'g' ? 2 : 0;
     const num = (n: number | undefined) => (n === undefined ? '—' : `${n.toFixed(digits)} ${unit}`);
@@ -572,6 +662,9 @@ purge_length: 30</code>
                 .unit=${ctl.chart.unit}
                 .seconds=${this.chartSeconds}
                 .paused=${this.chartPaused}
+                .filter=${this.chartFilter}
+                .filterMs=${this.chartFilterMs}
+                .showRaw=${this.chartRaw}
                 .emptyText=${empty}
               ></tessera-pa-force-chart>
               <div class="row">
@@ -589,6 +682,50 @@ purge_length: 30</code>
                   ${this.chartPaused ? this.t('patester.chart.resume') : this.t('patester.chart.pause')}
                 </button>
                 <button class="btn" @click=${() => ctl.clearChart()}>${this.t('patester.chart.clear')}</button>
+              </div>
+              <div class="row">
+                <label class="field">
+                  <span class="field-label">${this.t('patester.chart.filter')}</span>
+                  <select @change=${(e: Event) => this.#setFilter(parseFilterKind((e.target as HTMLSelectElement).value))}>
+                    ${FILTER_KINDS.map(
+                      (k) => html`<option value=${k} ?selected=${k === this.chartFilter}>${this.#filterName(k)}</option>`,
+                    )}
+                  </select>
+                </label>
+                ${this.chartFilter !== 'raw'
+                  ? html`<label class="field">
+                        <span class="field-label">${this.t('patester.chart.filterMs')}, ${this.t('patester.chart.ms')}</span>
+                        <input
+                          class="num"
+                          type="number"
+                          dir="ltr"
+                          inputmode="numeric"
+                          min=${FILTER_MS_MIN}
+                          max=${FILTER_MS_MAX}
+                          step="10"
+                          .value=${String(this.chartFilterMs)}
+                          @change=${(e: Event) => this.#setFilterMs((e.target as HTMLInputElement).valueAsNumber)}
+                        />
+                      </label>
+                      <label class="check">
+                        <input type="checkbox" .checked=${this.chartRaw} @change=${(e: Event) => this.#setRaw((e.target as HTMLInputElement).checked)} />
+                        <span>${this.t('patester.chart.showRaw')}</span>
+                      </label>`
+                  : nothing}
+                <label class="check">
+                  <input type="checkbox" .checked=${this.chartMains} @change=${(e: Event) => this.#setMains((e.target as HTMLInputElement).checked)} />
+                  <span>${this.t('patester.chart.mains')}</span>
+                </label>
+                ${this.chartMains
+                  ? html`<select
+                        class="end"
+                        aria-label=${this.t('patester.chart.mainsHz')}
+                        @change=${(e: Event) => this.#setMainsHz(parseMainsHz(Number((e.target as HTMLSelectElement).value)))}
+                      >
+                        ${MAINS_HZ.map((hz) => html`<option value=${hz} ?selected=${hz === this.chartMainsHz}>${hz} ${this.t('patester.chart.hz')}</option>`)}
+                      </select>
+                      ${!ctl.chart.mainsActive ? html`<span class="chip warn-chip end">${this.t('patester.chart.mainsLowRate')}</span>` : nothing}`
+                  : nothing}
               </div>
               <p class="muted">${this.t('patester.chart.tare')}</p>
             </div>`
