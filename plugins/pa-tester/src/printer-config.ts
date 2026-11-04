@@ -16,7 +16,7 @@ import type { MoonrakerProxyHandle } from './sdk';
 export interface LoadCellInfo {
   /** Config section, e.g. `load_cell`, `load_cell foo`, `load_cell_probe`. */
   section: string;
-  /** Name for the `load_cell/dump_force` webhook (`sensor` param). */
+  /** Name for the `load_cell/dump_force` webhook (`sensor` param, `load_cell` on older Klipper). */
   name: string;
 }
 

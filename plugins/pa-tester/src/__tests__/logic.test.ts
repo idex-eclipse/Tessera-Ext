@@ -221,6 +221,8 @@ describe('force source', () => {
     const sink = { onSamples: vi.fn(), onSource: vi.fn() };
     startForceSource(handleWith({ klippyStream, subscribe }), cell, sink, () => 42);
 
+    // Klipper rejects the documented key and then the older one: only now fall back to status
+    onStatus('unavailable');
     onStatus('unavailable');
     expect(subscribe).toHaveBeenCalledWith({ 'load_cell foo': ['force_g'] }, expect.any(Function), { immediate: true });
     statusCb({ 'load_cell foo': { force_g: 3.5 } });

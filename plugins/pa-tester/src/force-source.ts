@@ -1,5 +1,6 @@
 import { binSamples, parseForceBatch, type ForceSample, type ForceUnit } from './force-parse';
 import { MainsFilter, type MainsHz } from './mains-filter';
+import { openStream } from './stream-keys';
 import type { LoadCellInfo } from './printer-config';
 import type { MoonrakerProxyHandle } from './sdk';
 
@@ -98,9 +99,11 @@ export function startForceSource(
   if (typeof handle.klippyStream !== 'function') {
     startStatus();
   } else {
-    stopStream = handle.klippyStream(
+    stopStream = openStream(
+      handle,
       'load_cell/dump_force',
-      { sensor: loadCell.name },
+      // documented key first; older Klipper answers "Missing Argument [load_cell]" to it
+      [{ sensor: loadCell.name }, { load_cell: loadCell.name }],
       (params) => {
         const batch = parseForceBatch(params);
         if (!batch.samples.length) return;
