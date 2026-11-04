@@ -1,0 +1,207 @@
+{
+ "capture": "corexy",
+ "kinematics": "corexy",
+ "startTime": 100.0,
+ "cases": [
+  {
+   "id": "trapq",
+   "columns": [
+    "trapq(toolhead,velocity)",
+    "trapq(toolhead,accel)",
+    "trapq(toolhead,x)",
+    "trapq(toolhead,y)",
+    "trapq(toolhead,z)",
+    "trapq(toolhead,x_velocity)",
+    "trapq(toolhead,y_velocity)",
+    "trapq(toolhead,z_velocity)",
+    "trapq(toolhead,x_accel)",
+    "trapq(toolhead,y_accel)"
+   ],
+   "skip": 0.0,
+   "duration": 2.0,
+   "segmentTime": 0.002,
+   "csv": "expected-trapq.csv"
+  },
+  {
+   "id": "stepq",
+   "columns": [
+    "stepq(stepper_x)",
+    "stepq(stepper_y)",
+    "stepq(stepper_z)",
+    "stepq(stepper_x,0.02)",
+    "stepq(stepper_x,0.0005)"
+   ],
+   "skip": 0.0,
+   "duration": 2.0,
+   "segmentTime": 0.002,
+   "csv": "expected-stepq.csv"
+  },
+  {
+   "id": "kin",
+   "columns": [
+    "kin(stepper_x)",
+    "kin(stepper_y)",
+    "kin(stepper_z)",
+    "deviation(stepq(stepper_x),kin(stepper_x))",
+    "deviation(stepq(stepper_y),kin(stepper_y))"
+   ],
+   "skip": 0.0,
+   "duration": 2.0,
+   "segmentTime": 0.002,
+   "csv": "expected-kin.csv"
+  },
+  {
+   "id": "kin-fine",
+   "columns": [
+    "deviation(stepq(stepper_x),kin(stepper_x))",
+    "trapq(toolhead,velocity)"
+   ],
+   "skip": 0.0,
+   "duration": 0.4,
+   "segmentTime": 0.0001,
+   "csv": "expected-kin-fine.csv"
+  },
+  {
+   "id": "step-phase",
+   "columns": [
+    "step_phase(tmc2209 stepper_x)",
+    "step_phase(tmc2209 stepper_x,microstep)",
+    "step_phase(tmc2209 stepper_y)"
+   ],
+   "skip": 0.0,
+   "duration": 2.0,
+   "segmentTime": 0.002,
+   "csv": "expected-step-phase.csv"
+  },
+  {
+   "id": "accelerometer",
+   "columns": [
+    "accelerometer(hotend,x)",
+    "accelerometer(hotend,y)",
+    "accelerometer(hotend,z)"
+   ],
+   "skip": 0.0,
+   "duration": 2.0,
+   "segmentTime": 0.002,
+   "csv": "expected-accelerometer.csv"
+  },
+  {
+   "id": "sensors",
+   "columns": [
+    "angle(ang_x)",
+    "angle(ang_z)",
+    "ldc1612(eddy)",
+    "ldc1612(eddy,period)",
+    "ldc1612(eddy,z)",
+    "loadcell(lc)",
+    "loadcell(lc,counts)",
+    "stallguard(stepper_x,sg_result)"
+   ],
+   "skip": 0.0,
+   "duration": 2.0,
+   "segmentTime": 0.002,
+   "csv": "expected-sensors.csv"
+  },
+  {
+   "id": "stallguard-cs",
+   "columns": [
+    "stallguard(stepper_x,cs_actual)"
+   ],
+   "skip": 0.0,
+   "duration": 2.0,
+   "segmentTime": 0.002,
+   "csv": "expected-stallguard-cs.csv"
+  },
+  {
+   "id": "status",
+   "columns": [
+    "status(toolhead.estimated_print_time)",
+    "status(extruder.temperature)",
+    "status(toolhead.max_velocity)",
+    "status(extruder.nothing)"
+   ],
+   "skip": 0.0,
+   "duration": 2.0,
+   "segmentTime": 0.002,
+   "csv": "expected-status.csv"
+  },
+  {
+   "id": "analyzers",
+   "columns": [
+    "derivative(trapq(toolhead,x))",
+    "derivative(derivative(trapq(toolhead,x)))",
+    "integral(trapq(toolhead,accel))",
+    "integral(accelerometer(hotend,x))",
+    "integral(accelerometer(hotend,x),trapq(toolhead,x_velocity))",
+    "integral(accelerometer(hotend,x),trapq(toolhead,x_velocity),0.05)",
+    "norm2(trapq(toolhead,x_velocity),trapq(toolhead,y_velocity))",
+    "norm2(accelerometer(hotend,x),accelerometer(hotend,y),accelerometer(hotend,z))",
+    "smooth(accelerometer(hotend,x))",
+    "smooth(accelerometer(hotend,y),0.03)",
+    "deviation(trapq(toolhead,x),trapq(toolhead,y))"
+   ],
+   "skip": 0.0,
+   "duration": 2.0,
+   "segmentTime": 0.002,
+   "csv": "expected-analyzers.csv"
+  },
+  {
+   "id": "sos",
+   "columns": [
+    "sos(accelerometer(hotend,x),filt,lowpass,2,60)",
+    "sos(accelerometer(hotend,x),filtfilt,lowpass,3,60)",
+    "sos(accelerometer(hotend,y),filt,highpass,2,20)",
+    "sos(accelerometer(hotend,y),filtfilt,highpass,4,20)",
+    "sos(accelerometer(hotend,z),filt,bandpass,2,30,100)",
+    "sos(accelerometer(hotend,z),filtfilt,bandpass,3,30,100)",
+    "sos(accelerometer(hotend,x),filt,notch,55,10)",
+    "sos(accelerometer(hotend,x),filtfilt,notch,55,5)"
+   ],
+   "skip": 0.0,
+   "duration": 2.0,
+   "segmentTime": 0.002,
+   "csv": "expected-sos.csv"
+  },
+  {
+   "id": "sos-fine",
+   "columns": [
+    "sos(accelerometer(hotend,x),filtfilt,bandpass,2,150,400)",
+    "sos(accelerometer(hotend,x),filt,lowpass,5,300)",
+    "sos(accelerometer(hotend,x),filtfilt,highpass,1,100)"
+   ],
+   "skip": 0.0,
+   "duration": 0.5,
+   "segmentTime": 0.0005,
+   "csv": "expected-sos-fine.csv"
+  },
+  {
+   "id": "skip",
+   "columns": [
+    "trapq(toolhead,velocity)",
+    "stepq(stepper_x)",
+    "accelerometer(hotend,x)",
+    "deviation(stepq(stepper_x),kin(stepper_x))",
+    "step_phase(tmc2209 stepper_x)",
+    "loadcell(lc)",
+    "status(extruder.temperature)"
+   ],
+   "skip": 0.55,
+   "duration": 1.0,
+   "segmentTime": 0.002,
+   "csv": "expected-skip.csv"
+  },
+  {
+   "id": "corexy",
+   "columns": [
+    "corexy(x,stepq(stepper_x),stepq(stepper_y))",
+    "corexy(y,stepq(stepper_x),stepq(stepper_y))",
+    "deviation(corexy(x,stepq(stepper_x),stepq(stepper_y)),trapq(toolhead,x))",
+    "deviation(corexy(y,stepq(stepper_x),stepq(stepper_y)),trapq(toolhead,y))"
+   ],
+   "skip": 0.0,
+   "duration": 2.0,
+   "segmentTime": 0.002,
+   "csv": "expected-corexy.csv"
+  }
+ ]
+}

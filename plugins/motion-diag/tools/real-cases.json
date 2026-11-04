@@ -1,0 +1,35 @@
+{
+ "comment": "Cases for a capture of a load cell probe with trapq/stepq subscriptions (a generic_cartesian printer standing still). Names are those of that capture; adapt them to yours.",
+ "cases": [
+  {"id": "loadcell", "columns": ["loadcell(load_cell_probe)", "loadcell(load_cell_probe,counts)"],
+   "skip": 0.0, "duration": 60.0, "segmentTime": 0.001},
+  {"id": "loadcell-fine", "columns": ["loadcell(load_cell_probe)", "loadcell(load_cell_probe,counts)"],
+   "skip": 12.5, "duration": 5.0, "segmentTime": 0.0001},
+  {"id": "loadcell-analyzers", "columns": [
+    "derivative(loadcell(load_cell_probe))",
+    "integral(loadcell(load_cell_probe))",
+    "smooth(loadcell(load_cell_probe))",
+    "smooth(loadcell(load_cell_probe),0.05)",
+    "norm2(loadcell(load_cell_probe),loadcell(load_cell_probe,counts))",
+    "deviation(loadcell(load_cell_probe),smooth(loadcell(load_cell_probe),0.05))"],
+   "skip": 5.0, "duration": 30.0, "segmentTime": 0.001},
+  {"id": "loadcell-sos", "columns": [
+    "sos(loadcell(load_cell_probe),filt,lowpass,3,50)",
+    "sos(loadcell(load_cell_probe),filtfilt,lowpass,4,50)",
+    "sos(loadcell(load_cell_probe),filt,highpass,2,5)",
+    "sos(loadcell(load_cell_probe),filtfilt,bandpass,2,10,80)",
+    "sos(loadcell(load_cell_probe),filt,notch,50,15)",
+    "sos(loadcell(load_cell_probe),filtfilt,notch,100,15)"],
+   "skip": 0.0, "duration": 40.0, "segmentTime": 0.001},
+  {"id": "idle-streams", "columns": [
+    "trapq(toolhead,velocity)", "trapq(toolhead,x)", "trapq(toolhead,z_accel)",
+    "stepq(stepper x_stepper)", "stepq(extruder)",
+    "step_phase(tmc5160 stepper x_stepper)", "step_phase(tmc5160 stepper x_stepper,microstep)"],
+   "skip": 0.0, "duration": 20.0, "segmentTime": 0.001},
+  {"id": "status", "columns": [
+    "status(toolhead.estimated_print_time)", "status(extruder.temperature)",
+    "status(heater_bed.temperature)", "status(load_cell_probe.force_g)",
+    "status(load_cell_probe.min_force_g)", "status(print_stats.nothing)"],
+   "skip": 0.0, "duration": 60.0, "segmentTime": 0.01}
+ ]
+}

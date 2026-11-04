@@ -1,0 +1,22 @@
+{
+  "id": "tessera/motion-diag",
+  "name": "Motion diagnostics",
+  "version": "0.1.0",
+  "description": "Klipper motan in the browser: record motion, accelerometer, load cell and stallguard data, analyse it and look at the graphs, in a tab of the Machine page",
+  "author": "Tessera",
+  "entry": "index.js",
+  "pluginApi": "0.12",
+  "dependencies": { "@core/system": "4.0.0" },
+  "locales": ["en", "ru"],
+
+  "extensions": [
+    {
+      "point": "@core/system#tabs",
+      "kind": "tab",
+      "version": 1,
+      "id": "motion-diag",
+      "titleKey": "motiondiag.tabTitle",
+      "element": "tessera-motion-diag-tab"
+    }
+  ]
+}
