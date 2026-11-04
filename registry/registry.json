@@ -2,6 +2,24 @@
   "schema": 1,
   "plugins": [
     {
+      "id": "tessera/motion-diag",
+      "dir": "motion-diag",
+      "name": "Motion diagnostics",
+      "version": "0.1.0",
+      "description": "Klipper motan in the browser: record motion, accelerometer, load cell and stallguard data, analyse it and look at the graphs, in a tab of the Machine page",
+      "author": "Tessera",
+      "pluginApi": "0.12",
+      "requires": [
+        "@core/system"
+      ],
+      "dependencies": {
+        "@core/system": "4.0.0"
+      },
+      "url": "motion-diag-0.1.0.tar.gz",
+      "sha256": "f3cdb0cee74de6803c263e3cd8e1469a4d0627b3d131cc914d416e984d19c3e5",
+      "size": 74387
+    },
+    {
       "id": "tessera/pa-autotune",
       "dir": "pa-autotune",
       "name": "PA Autotune",
