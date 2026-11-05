@@ -1,0 +1,24 @@
+{
+  "name": "tessera-plugin-maintenance",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Printer maintenance for Tessera: reminders by print hours, prints, days and filament, follow-up chains, a pre-print check",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch --mode dev",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "pack": "npm run build && node scripts/pack.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0",
+    "happy-dom": "^20.14.6",
+    "vite": "^6.0.0"
+  },
+  "dependencies": {
+    "lit": "^3.2.1"
+  }
+}

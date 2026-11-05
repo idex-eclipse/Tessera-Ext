@@ -1,0 +1,48 @@
+{
+  "id": "tessera/maintenance",
+  "name": "Maintenance",
+  "version": "0.1.0",
+  "description": "Printer maintenance reminders in a tab of the Machine page: intervals by print hours, prints, days and filament, follow-up chains and a pre-print check",
+  "author": "Tessera",
+  "entry": "index.js",
+  "pluginApi": "0.12",
+  "dependencies": { "@core/system": "4.0.0" },
+  "locales": ["en", "ru"],
+
+  "extensions": [
+    {
+      "point": "@core/system#tabs",
+      "kind": "tab",
+      "version": 1,
+      "id": "maintenance",
+      "titleKey": "maintenance.tabTitle",
+      "element": "tessera-maintenance-tab"
+    }
+  ],
+
+  "overlays": [
+    {
+      "id": "maintenance-monitor",
+      "element": "tessera-maintenance-overlay"
+    }
+  ],
+
+  "guards": [
+    {
+      "id": "maintenance-print-start",
+      "match": ["printer.print.start", "server.job_queue.start"],
+      "handler": "guardPrintStart"
+    }
+  ],
+
+  "widgets": [
+    {
+      "type": "maintenance",
+      "provider": "tessera/maintenance",
+      "titleKey": "maintenance.widgetTitle",
+      "element": "tessera-maintenance-widget",
+      "defaultSize": { "w": 4, "h": 3 },
+      "minSize": { "w": 3, "h": 2 }
+    }
+  ]
+}

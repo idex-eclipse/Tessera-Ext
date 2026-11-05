@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+
+    // Host contracts are imported as TYPES ONLY (`import type`), so nothing from the
+    // host ends up in the bundle. The path expects a Tessera checkout next to this
+    // repository, the same layout the other plugins assume.
+    "paths": {
+      "@tessera/sdk": ["../../../Tessera/plugin-sdk/src/types.ts"]
+    }
+  },
+  "include": ["src"]
+}
