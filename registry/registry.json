@@ -2,6 +2,24 @@
   "schema": 1,
   "plugins": [
     {
+      "id": "tessera/maintenance",
+      "dir": "maintenance",
+      "name": "Maintenance",
+      "version": "0.1.0",
+      "description": "Printer maintenance reminders in a tab of the Machine page: intervals by print hours, prints, days and filament, follow-up chains and a pre-print check",
+      "author": "Tessera",
+      "pluginApi": "0.12",
+      "requires": [
+        "@core/system"
+      ],
+      "dependencies": {
+        "@core/system": "4.0.0"
+      },
+      "url": "maintenance-0.1.0.tar.gz",
+      "sha256": "a734802ffad77c4a74b83e1cfecf6e9ca23d30dd7e3e1e5e114c3560e993f3a0",
+      "size": 40825
+    },
+    {
       "id": "tessera/motion-diag",
       "dir": "motion-diag",
       "name": "Motion diagnostics",
