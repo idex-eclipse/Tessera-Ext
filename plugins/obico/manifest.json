@@ -1,0 +1,73 @@
+{
+  "id": "tessera/obico",
+  "name": "Obico",
+  "version": "0.1.0",
+  "description": "Obico failure detection in Tessera: link the printer, watch the failure probability, answer alerts, see what the detection caught; settings in a tab of the Machine page",
+  "author": "Tessera",
+  "entry": "index.js",
+  "pluginApi": "0.13",
+  "dependencies": { "@core/system": "4.0.0" },
+  "locales": ["en", "ru"],
+
+  "services": [
+    { "name": "obico", "authHeader": "Authorization", "authPrefix": "Bearer ", "allowPaths": ["api/v1/", "media/"] }
+  ],
+
+  "extensions": [
+    {
+      "point": "@core/system#tabs",
+      "kind": "tab",
+      "version": 1,
+      "id": "obico",
+      "titleKey": "obico.tabTitle",
+      "element": "tessera-obico-tab"
+    },
+    {
+      "point": "@core/system#banner-status-actions",
+      "kind": "action",
+      "version": 1,
+      "id": "obico-mute",
+      "titleKey": "obico.action.mute",
+      "icon": "bell",
+      "handler": "obicoMuteHandler",
+      "available": "obicoMuteAvailable"
+    }
+  ],
+
+  "overlays": [
+    { "id": "obico-monitor", "element": "tessera-obico-overlay" }
+  ],
+
+  "widgets": [
+    {
+      "type": "obico-detection",
+      "provider": "tessera/obico",
+      "titleKey": "obico.widget.detection",
+      "element": "tessera-obico-detection-widget",
+      "defaultSize": { "w": 4, "h": 4 },
+      "minSize": { "w": 2, "h": 2 }
+    },
+    {
+      "type": "obico-stats",
+      "provider": "tessera/obico",
+      "titleKey": "obico.widget.stats",
+      "element": "tessera-obico-stats-widget",
+      "defaultSize": { "w": 4, "h": 3 },
+      "minSize": { "w": 3, "h": 2 }
+    }
+  ],
+
+  "chips": [
+    {
+      "type": "obico",
+      "provider": "tessera/obico",
+      "titleKey": "obico.chip.title",
+      "element": "tessera-obico-chip",
+      "pickerElement": "tessera-obico-chip-picker"
+    }
+  ],
+
+  "printerPanels": [
+    { "id": "obico-fleet", "element": "tessera-obico-fleet-panel", "titleKey": "obico.fleet.title" }
+  ]
+}
