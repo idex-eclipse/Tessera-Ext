@@ -347,14 +347,12 @@ describe('host contract', () => {
     await flush();
     expect(serverCalls).toContainEqual({ path: 'api/v1/printers/3/mute_current_print/?mute_alert=false', method: 'POST', body: undefined });
 
-    // No print → the switch stays visible but disabled.
+    // No print → the header is empty.
     obicoPrinter.current_print = null;
     resetHub();
     const header3 = await mount('tessera-obico-detection-header', fake.api);
     await flush(4);
-    const input3 = header3.shadowRoot!.querySelector('input')!;
-    expect(input3.disabled).toBe(true);
-    expect(input3.checked).toBe(false);
+    expect(header3.shadowRoot!.querySelector('input')).toBeNull();
   });
 
   it('stats widget: totals and how the alerts were answered', async () => {
