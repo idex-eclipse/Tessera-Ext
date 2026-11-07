@@ -23,14 +23,17 @@ export class ObicoChip extends HubElement {
       :host {
         block-size: 100%;
         gap: 0;
+        /* The strip lays chips out by their intrinsic width. max-content keeps the chip
+           exactly as wide as its content: when the host is allowed to squeeze the chip,
+           the nowrap label overflows onto the state text (the chip has no truncation). */
+        inline-size: max-content;
+        min-inline-size: 104px;
       }
       a {
         position: relative;
         display: flex;
         block-size: 100%;
         box-sizing: border-box;
-        /* The chip width follows its content: nothing inside truncates, the chip stretches. */
-        min-inline-size: 104px;
         padding-block: 4px 6px;
         padding-inline: 12px 10px;
         border: 1px solid var(--border-color);

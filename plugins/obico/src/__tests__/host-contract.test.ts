@@ -305,6 +305,24 @@ describe('host contract', () => {
     expect(serverCalls.some((c) => c.path === 'media/tsd-pics/raw/3/1.jpg?digest=x')).toBe(true);
     // The body is only the frame and the gauge; answers to alerts live in the overlay.
     expect(deepButtons(el)).toEqual([]);
+    // The live gauge: three zones, the ball on the arc, the label and the percent inside.
+    const liveGauge = el.shadowRoot!.querySelector('.gauge')!;
+    expect(liveGauge.classList.contains('good')).toBe(true);
+    expect(liveGauge.querySelectorAll('.zone').length).toBe(3);
+    expect(liveGauge.querySelector('.ball')).not.toBeNull();
+    expect(liveGauge.querySelector('.eye-off')).toBeNull();
+
+    // Not watched: grey zones, the eye-off icon and the reason instead of the ball.
+    obicoPrinter.not_watching_reason = 'Printer is not actively printing';
+    resetHub();
+    const el2 = await mount('tessera-obico-detection-widget', fake.api);
+    await flush(4);
+    const idleGauge = el2.shadowRoot!.querySelector('.gauge')!;
+    expect(idleGauge.classList.contains('idle')).toBe(true);
+    expect(idleGauge.querySelectorAll('.zone').length).toBe(3);
+    expect(idleGauge.querySelector('.ball')).toBeNull();
+    expect(idleGauge.querySelector('.eye-off')).not.toBeNull();
+    expect(idleGauge.textContent).toContain('obico.reason.notPrinting');
 
     // The header (headerElement of the widget) carries the "do not watch this print" switch.
     const header = await mount('tessera-obico-detection-header', fake.api);
@@ -329,12 +347,14 @@ describe('host contract', () => {
     await flush();
     expect(serverCalls).toContainEqual({ path: 'api/v1/printers/3/mute_current_print/?mute_alert=false', method: 'POST', body: undefined });
 
-    // No print → the header is empty.
+    // No print → the switch stays visible but disabled.
     obicoPrinter.current_print = null;
     resetHub();
     const header3 = await mount('tessera-obico-detection-header', fake.api);
     await flush(4);
-    expect(header3.shadowRoot!.querySelector('input')).toBeNull();
+    const input3 = header3.shadowRoot!.querySelector('input')!;
+    expect(input3.disabled).toBe(true);
+    expect(input3.checked).toBe(false);
   });
 
   it('stats widget: totals and how the alerts were answered', async () => {
