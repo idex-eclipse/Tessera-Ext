@@ -13,6 +13,41 @@ export function level(p: number): Level {
   return 'good';
 }
 
+/**
+ * Geometry of the semicircular gauge (ui/parts.ts gauge()). Pure and unit-tested here,
+ * next to the zone thresholds it visualises.
+ *
+ * The arc is a half circle over the baseline y = GAUGE.cy, from p = 0 at the left end to
+ * p = 1 at the right end (screen coordinates, y grows downward). Like every chart in
+ * Tessera it is not mirrored in RTL: probability is not a directional quantity.
+ */
+export const GAUGE = { cx: 50, cy: 56, r: 40 } as const;
+
+/** Zone boundaries of the arc, as fractions of the half circle (see level()). */
+export const GAUGE_ZONES: ReadonlyArray<{ from: number; to: number; level: Level }> = [
+  { from: 0, to: 1 / 3, level: 'good' },
+  { from: 1 / 3, to: 2 / 3, level: 'fishy' },
+  { from: 2 / 3, to: 1, level: 'failing' },
+];
+
+function clamp01(p: number): number {
+  return Math.min(1, Math.max(0, p));
+}
+
+/** A point of the arc at probability `p` (0 left, 1 right) on radius `r`. */
+export function gaugePoint(p: number, r: number = GAUGE.r): { x: number; y: number } {
+  const a = Math.PI * (1 - clamp01(p));
+  return { x: GAUGE.cx + r * Math.cos(a), y: GAUGE.cy - r * Math.sin(a) };
+}
+
+/** SVG path of the arc segment between two probabilities (`from` < `to`). */
+export function gaugeArcPath(from: number, to: number, r: number = GAUGE.r): string {
+  const s = gaugePoint(from, r);
+  const e = gaugePoint(to, r);
+  // sweep 1: with y growing downward the arc goes over the top from left to right.
+  return `M ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${r} ${r} 0 0 1 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
+}
+
 /** A print session is going on (Obico keeps `current_print` until the print ends). */
 export function isPrinting(printer: ObicoPrinter | null | undefined): boolean {
   return Boolean(printer?.current_print);

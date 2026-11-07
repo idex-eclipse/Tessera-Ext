@@ -3,18 +3,19 @@ import { css, html, nothing, type TemplateResult } from 'lit';
 import { HubElement } from '../base-element';
 import { alertPending, sparkline } from '../core/detection';
 import { styles } from './styles';
-import { meter, meterStyles, notReady, reasonText, tabHref } from './parts';
+import { gauge, gaugeStyles, notReady, tabHref } from './parts';
 
 /**
  * <tessera-obico-detection-widget> - "Failure detection" on the dashboard, for the active
- * printer: Obico's gauge, the frame it last analysed, the probability over this print and
- * the two answers that need no dialog (stop watching this print; "not a failure").
- * Cancelling a print is left to the alert window and the print banner, where it is asked.
+ * printer. The layout follows Obico's own panel: the frame it last analysed on top, the
+ * semicircular gauge under it, then the two answers that need no dialog (stop watching
+ * this print; "not a failure") and the probability over this print. Cancelling a print is
+ * left to the alert window and the print banner, where it is asked.
  */
 export class ObicoDetectionWidget extends HubElement {
   static override styles = [
     styles,
-    meterStyles,
+    gaugeStyles,
     css`
       :host {
         block-size: 100%;
@@ -63,22 +64,13 @@ export class ObicoDetectionWidget extends HubElement {
       return html`<p class="muted">${hub.status === 'error' ? this.t('obico.api.failed') : this.t('obico.api.notFound')}</p>`;
     }
     const print = printer.current_print;
-    const reason = reasonText(this.t, printer);
     const samples = hub.samples(printer.id);
     const run = (action: () => Promise<unknown>) => void hub.run(action).catch(() => undefined);
 
     return html`
-      ${meter(this.t, printer)}
-      ${alertPending(print) ? html`<p class="alert" role="alert">${this.t('obico.alert.short')}</p>` : nothing}
-      ${reason ? html`<p class="muted">${reason}</p>` : nothing}
       <tessera-obico-snapshot .api=${api} .src=${printer.pic?.img_url ?? null}></tessera-obico-snapshot>
-      ${samples.length > 1
-        ? html`<svg viewBox="0 0 100 30" preserveAspectRatio="none" dir="ltr" role="img" aria-label=${this.t('obico.widget.graph')}>
-            <line x1="0" x2="100" y1="20.1" y2="20.1"></line>
-            <line x1="0" x2="100" y1="9.9" y2="9.9"></line>
-            <polyline points=${sparkline(samples)}></polyline>
-          </svg>`
-        : nothing}
+      ${gauge(this.t, printer)}
+      ${alertPending(print) ? html`<p class="alert" role="alert">${this.t('obico.alert.short')}</p>` : nothing}
       ${print
         ? html`<div class="row">
             ${alertPending(print)
@@ -88,6 +80,13 @@ export class ObicoDetectionWidget extends HubElement {
               ? html`<button @click=${() => run(() => hub.client.mute(printer.id))}>${this.t('obico.alert.mute')}</button>`
               : nothing}
           </div>`
+        : nothing}
+      ${samples.length > 1
+        ? html`<svg viewBox="0 0 100 30" preserveAspectRatio="none" dir="ltr" role="img" aria-label=${this.t('obico.widget.graph')}>
+            <line x1="0" x2="100" y1="20.1" y2="20.1"></line>
+            <line x1="0" x2="100" y1="9.9" y2="9.9"></line>
+            <polyline points=${sparkline(samples)}></polyline>
+          </svg>`
         : nothing}
     `;
   }

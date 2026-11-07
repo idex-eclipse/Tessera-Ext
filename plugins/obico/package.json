@@ -1,6 +1,6 @@
 {
   "name": "tessera-plugin-obico",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Obico for Tessera: link status, the moonraker-obico service and the Obico tunnel in a tab of the Machine page",

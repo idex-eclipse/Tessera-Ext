@@ -3,16 +3,18 @@ import { css, html, nothing, type TemplateResult } from 'lit';
 import { HubElement, TesseraElement } from '../base-element';
 import { alertPending, level } from '../core/detection';
 import { styles } from './styles';
-import { reasonText, tabHref } from './parts';
+import { eyeIcon, eyeOffIcon, reasonText, tabHref } from './parts';
 
 /** The only item of the chip catalog: the failure probability of the active printer. */
 export const CHIP_ITEM = 'probability';
 
 /**
  * <tessera-obico-chip> - the failure probability of the active printer in the quick
- * access strip: percent and Obico's colour zone, "not watching" when Obico does not look,
- * a red frame while an alert waits for an answer. A click opens the Obico tab; nothing
- * happens in dashboard edit mode, where the host draws its own controls.
+ * access strip. The look copies the tuning chips of widgets-core (TuningChip.svelte):
+ * an accent stripe at the inline start (red while an alert waits for an answer), the
+ * label on top with the state next to it, and an eye icon with the percent at the bottom.
+ * A click opens the Obico tab; nothing happens in dashboard edit mode, where the host
+ * draws its own controls.
  */
 export class ObicoChip extends HubElement {
   static override styles = [
@@ -23,52 +25,128 @@ export class ObicoChip extends HubElement {
         gap: 0;
       }
       a {
+        position: relative;
         display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 2px;
         block-size: 100%;
         box-sizing: border-box;
         /* The chip width follows its content but never grows past the strip's taste. */
-        max-inline-size: 180px;
-        min-inline-size: 90px;
-        padding: var(--space-xs) var(--space-md);
+        min-inline-size: 104px;
+        max-inline-size: 220px;
+        padding-block: 4px 6px;
+        padding-inline: 12px 10px;
         border: 1px solid var(--border-color);
         border-radius: var(--radius-md);
         background: var(--bg-surface);
         color: var(--text-primary);
         text-decoration: none;
+        overflow: hidden;
+        transition:
+          background var(--transition-fast, 0.15s ease),
+          border-color var(--transition-fast, 0.15s ease),
+          box-shadow var(--transition-fast, 0.15s ease);
+      }
+      a:hover {
+        box-shadow: var(--shadow-sm);
+        border-color: color-mix(in srgb, var(--accent) 45%, var(--border-color));
+      }
+      a:active {
+        transform: translateY(1px);
+      }
+      .stripe {
+        position: absolute;
+        inset-inline-start: 0;
+        top: 0;
+        bottom: 0;
+        inline-size: 3px;
+        background: var(--accent);
+      }
+      a.alert .stripe {
+        background: var(--danger);
       }
       a.missing {
         border-style: dashed;
-        color: var(--text-muted);
       }
-      a.alert {
-        border-color: var(--danger);
-        box-shadow: inset 0 0 0 1px var(--danger);
+      a.missing .stripe {
+        background: var(--border-color);
       }
-      .name,
-      .state {
-        font-size: var(--font-size-sm);
-        color: var(--text-secondary);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+      .body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 2px;
+        min-width: 0;
+        flex: 1;
       }
-      .value {
-        font-size: 1.3em;
+      .top {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        min-width: 0;
         font-weight: 600;
       }
-      .good {
+      .label {
+        flex: 1;
+        min-width: 0;
+        font-size: var(--font-size-lg);
+        color: var(--accent);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      a.missing .label {
+        color: var(--text-muted);
+      }
+      /* The state next to the label never pushes it away: a long reason truncates first. */
+      .sub {
+        flex-shrink: 0;
+        max-inline-size: 55%;
+        font-size: var(--font-size-sm);
+        font-weight: 400;
+        color: var(--text-muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .sub.failing {
+        color: var(--danger);
+        font-weight: 600;
+      }
+      .bottom {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .kind {
+        display: flex;
+        line-height: 0;
+        color: var(--text-muted);
+        opacity: 0.55;
+        flex-shrink: 0;
+      }
+      a.alert .kind {
+        color: var(--danger);
+        opacity: 1;
+      }
+      .value {
+        margin-inline-start: auto;
+        flex-shrink: 0;
+        font-family: ui-monospace, monospace;
+        font-size: var(--font-size-lg);
+        font-weight: 700;
+        color: var(--text-primary);
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
+      }
+      .value.good {
         color: var(--success);
       }
-      .fishy {
+      .value.fishy {
         color: var(--warning);
       }
-      .failing {
+      .value.failing {
         color: var(--danger);
       }
-      .idle {
+      .value.idle {
         color: var(--text-muted);
       }
     `,
@@ -81,6 +159,7 @@ export class ObicoChip extends HubElement {
     const edit = this.params.edit === '1';
     const printer = hub.printerFor(api.printer.id);
     const href = tabHref(api.printer.id);
+    const label = this.params.chipLabel || this.t('obico.chip.title');
     // In edit mode the chip is a picture: no navigation.
     const click = (ev: Event) => {
       if (edit) ev.preventDefault();
@@ -94,8 +173,17 @@ export class ObicoChip extends HubElement {
             ? this.t('obico.api.notLinked')
             : this.t('obico.loading');
       return html`<a class="missing" href=${href} @click=${click} title=${why}>
-        <span class="name">${this.params.chipLabel || this.t('obico.chip.title')}</span>
-        <span class="state">${why}</span>
+        <span class="stripe"></span>
+        <span class="body">
+          <span class="top">
+            <span class="label">${label}</span>
+            <span class="sub">${why}</span>
+          </span>
+          <span class="bottom">
+            <span class="kind">${eyeOffIcon}</span>
+            <span class="value idle" dir="ltr">—</span>
+          </span>
+        </span>
       </a>`;
     }
 
@@ -104,13 +192,21 @@ export class ObicoChip extends HubElement {
     const pending = alertPending(printer.current_print);
     const reason = reasonText(this.t, printer);
     return html`<a class=${pending ? 'alert' : ''} href=${href} @click=${click} title=${reason ?? this.t('obico.chip.title')}>
-      <span class="name">${this.params.chipLabel || this.t('obico.chip.title')}</span>
-      <span class="value ltr ${watching ? level(printer.normalized_p || 0) : 'idle'}" dir="ltr">${p}%</span>
-      ${pending
-        ? html`<span class="state failing">${this.t('obico.alert.short')}</span>`
-        : !watching
-          ? html`<span class="state">${reason ?? this.t('obico.meter.notWatching')}</span>`
-          : nothing}
+      <span class="stripe"></span>
+      <span class="body">
+        <span class="top">
+          <span class="label">${label}</span>
+          ${pending
+            ? html`<span class="sub failing">${this.t('obico.alert.short')}</span>`
+            : !watching
+              ? html`<span class="sub">${reason ?? this.t('obico.meter.notWatching')}</span>`
+              : nothing}
+        </span>
+        <span class="bottom">
+          <span class="kind">${watching ? eyeIcon : eyeOffIcon}</span>
+          <span class="value ${watching ? level(printer.normalized_p || 0) : 'idle'}" dir="ltr">${p}%</span>
+        </span>
+      </span>
     </a>`;
   }
 }
