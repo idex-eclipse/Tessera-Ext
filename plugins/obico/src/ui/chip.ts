@@ -29,9 +29,8 @@ export class ObicoChip extends HubElement {
         display: flex;
         block-size: 100%;
         box-sizing: border-box;
-        /* The chip width follows its content but never grows past the strip's taste. */
+        /* The chip width follows its content: nothing inside truncates, the chip stretches. */
         min-inline-size: 104px;
-        max-inline-size: 220px;
         padding-block: 4px 6px;
         padding-inline: 12px 10px;
         border: 1px solid var(--border-color);
@@ -89,22 +88,18 @@ export class ObicoChip extends HubElement {
         min-width: 0;
         font-size: var(--font-size-lg);
         color: var(--accent);
-        overflow: hidden;
-        text-overflow: ellipsis;
         white-space: nowrap;
       }
       a.missing .label {
         color: var(--text-muted);
       }
-      /* The state next to the label never pushes it away: a long reason truncates first. */
+      /* The state next to the label is short (a reason or "Possible failure"); a long
+         custom label takes the width it needs, the chip stretches for both. */
       .sub {
         flex-shrink: 0;
-        max-inline-size: 55%;
         font-size: var(--font-size-sm);
         font-weight: 400;
         color: var(--text-muted);
-        overflow: hidden;
-        text-overflow: ellipsis;
         white-space: nowrap;
       }
       .sub.failing {
@@ -123,6 +118,12 @@ export class ObicoChip extends HubElement {
         opacity: 0.55;
         flex-shrink: 0;
       }
+      /* Watching: the open eye lights up with the theme accent. */
+      .kind.on {
+        color: var(--accent);
+        opacity: 1;
+      }
+      /* An alert wins over the accent (and over .kind.on: one class more). */
       a.alert .kind {
         color: var(--danger);
         opacity: 1;
@@ -203,7 +204,7 @@ export class ObicoChip extends HubElement {
               : nothing}
         </span>
         <span class="bottom">
-          <span class="kind">${watching ? eyeIcon : eyeOffIcon}</span>
+          <span class="kind ${watching ? 'on' : ''}">${watching ? eyeIcon : eyeOffIcon}</span>
           <span class="value ${watching ? level(printer.normalized_p || 0) : 'idle'}" dir="ltr">${p}%</span>
         </span>
       </span>

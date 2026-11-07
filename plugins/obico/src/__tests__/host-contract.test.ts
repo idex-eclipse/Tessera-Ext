@@ -203,7 +203,7 @@ describe('host contract', () => {
     const tags: string[] = [
       ...manifest.extensions.flatMap((e) => ('element' in e && e.element ? [e.element] : [])),
       ...manifest.overlays.map((o) => o.element),
-      ...manifest.widgets.map((w) => w.element),
+      ...manifest.widgets.flatMap((w) => ('headerElement' in w && w.headerElement ? [w.element, w.headerElement] : [w.element])),
       ...manifest.chips.flatMap((c) => [c.element, c.pickerElement]),
       ...manifest.printerPanels.map((p) => p.element),
     ];
@@ -296,16 +296,45 @@ describe('host contract', () => {
     expect(deepText(el)).not.toContain('secret-token');
   });
 
-  it('detection widget: gauge, frame, mute', async () => {
+  it('detection widget: gauge and frame, the mute switch in the header', async () => {
     const fake = createFakeApi(linkedPrinter);
     const el = await mount('tessera-obico-detection-widget', fake.api);
     await flush(4);
     const text = deepText(el);
     expect(text).toContain('obico.level.good');
     expect(serverCalls.some((c) => c.path === 'media/tsd-pics/raw/3/1.jpg?digest=x')).toBe(true);
-    button(el, 'obico.alert.mute')!.click();
+    // The body is only the frame and the gauge; answers to alerts live in the overlay.
+    expect(deepButtons(el)).toEqual([]);
+
+    // The header (headerElement of the widget) carries the "do not watch this print" switch.
+    const header = await mount('tessera-obico-detection-header', fake.api);
+    await flush(4);
+    const input = header.shadowRoot!.querySelector('input')!;
+    expect(input.checked).toBe(false);
+    expect(deepText(header)).toContain('obico.alert.mute');
+    input.checked = true;
+    input.dispatchEvent(new Event('change'));
     await flush();
     expect(serverCalls).toContainEqual({ path: 'api/v1/printers/3/mute_current_print/?mute_alert=true', method: 'POST', body: undefined });
+
+    // A muted print shows the switch on, and switching it off unmutes.
+    obicoPrinter.current_print!.alert_muted_at = '2026-11-07T10:30:00Z';
+    resetHub(); // the hub polls fresh: it keeps parsed copies, not the test's object
+    const header2 = await mount('tessera-obico-detection-header', fake.api);
+    await flush(4);
+    const input2 = header2.shadowRoot!.querySelector('input')!;
+    expect(input2.checked).toBe(true);
+    input2.checked = false;
+    input2.dispatchEvent(new Event('change'));
+    await flush();
+    expect(serverCalls).toContainEqual({ path: 'api/v1/printers/3/mute_current_print/?mute_alert=false', method: 'POST', body: undefined });
+
+    // No print → the header is empty.
+    obicoPrinter.current_print = null;
+    resetHub();
+    const header3 = await mount('tessera-obico-detection-header', fake.api);
+    await flush(4);
+    expect(header3.shadowRoot!.querySelector('input')).toBeNull();
   });
 
   it('stats widget: totals and how the alerts were answered', async () => {
@@ -327,6 +356,19 @@ describe('host contract', () => {
     const chip = await mount('tessera-obico-chip', fake.api, { chipId: 'probability', edit: '0', narrow: 'false' });
     expect(chip.shadowRoot!.querySelector('.value')?.textContent).toBe('80%');
     expect(chip.shadowRoot!.querySelector('.value')?.classList.contains('failing')).toBe(true);
+    // Watching: the open eye (no <line> in it) carries the accent class.
+    const kind = chip.shadowRoot!.querySelector('.kind')!;
+    expect(kind.classList.contains('on')).toBe(true);
+    expect(kind.querySelector('svg line')).toBeNull();
+
+    // Not watching: the crossed eye without the accent, the percent greyed out.
+    obicoPrinter.not_watching_reason = 'Printer is not actively printing';
+    resetHub(); // the hub polls fresh: it keeps parsed copies, not the test's object
+    const chip2 = await mount('tessera-obico-chip', fake.api, { chipId: 'probability', edit: '0', narrow: 'false' });
+    const kind2 = chip2.shadowRoot!.querySelector('.kind')!;
+    expect(kind2.classList.contains('on')).toBe(false);
+    expect(kind2.querySelector('svg line')).not.toBeNull();
+    expect(chip2.shadowRoot!.querySelector('.value')?.classList.contains('idle')).toBe(true);
 
     const picker = await mount('tessera-obico-chip-picker', fake.api, { edit: '1', placed: '[]' });
     const picked = vi.fn();

@@ -104,9 +104,9 @@ export const meterStyles = css`
   }
 `;
 
-/** Stroke icons shared by the gauge and the chip (feather-style, 24×24). */
-export const eyeIcon = html`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-export const eyeOffIcon = html`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M6.61 6.61A13.526 13.526 0 0 0 1 12s4 8 11 8a9.74 9.74 0 0 0 5.39-1.61"/></svg>`;
+/** Stroke icons shared by the gauge and the chip (feather-style, 24×24 viewBox, drawn 40×40). */
+export const eyeIcon = html`<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+export const eyeOffIcon = html`<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M6.61 6.61A13.526 13.526 0 0 0 1 12s4 8 11 8a9.74 9.74 0 0 0 5.39-1.61"/></svg>`;
 
 /**
  * The semicircular gauge of Obico's own web app: three zones (green, orange, red) as arc
@@ -243,7 +243,8 @@ export class ObicoSnapshot extends TesseraElement {
       block-size: 100%;
       object-fit: contain;
       border-radius: var(--radius-sm);
-      background: var(--bg-surface-hover);
+      /* Transparent: the widget card already has a background, a second one shows as a box. */
+      background: transparent;
     }
     .empty {
       display: flex;
@@ -255,7 +256,7 @@ export class ObicoSnapshot extends TesseraElement {
       min-block-size: 60px;
       color: var(--text-muted);
       font-size: var(--font-size-sm);
-      background: var(--bg-surface-hover);
+      background: transparent;
       border-radius: var(--radius-sm);
       text-align: center;
       padding: var(--space-sm);
