@@ -29,8 +29,6 @@ export class ObicoChip extends HubElement {
         display: flex;
         block-size: 100%;
         box-sizing: border-box;
-        /* The chip width follows its content: nothing inside truncates, the chip stretches. */
-        min-inline-size: 104px;
         padding-block: 4px 6px;
         padding-inline: 12px 10px;
         border: 1px solid var(--border-color);
@@ -38,6 +36,8 @@ export class ObicoChip extends HubElement {
         background: var(--bg-surface);
         color: var(--text-primary);
         text-decoration: none;
+        inline-size: max-content;
+        min-inline-size: 104px;
         overflow: hidden;
         transition:
           background var(--transition-fast, 0.15s ease),
