@@ -1,4 +1,4 @@
-import { css, html, nothing, type TemplateResult } from 'lit';
+import { css, html, nothing, svg, type TemplateResult } from 'lit';
 
 import { TesseraElement } from '../base-element';
 import { GAUGE, GAUGE_ZONES, gaugeArcPath, gaugePoint, level, reasonKey } from '../core/detection';
@@ -121,24 +121,22 @@ export function gauge(t: T, printer: ObicoPrinter): TemplateResult {
   const lv = level(p);
   const ball = gaugePoint(p);
   const reason = reasonText(t, printer);
-  // Small gaps between the zone segments, like the ticks of Obico's gauge.
   const gap = 0.012;
   return html`
     <div class="gauge ${live ? lv : 'idle'}" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(p * 100)}
       aria-label=${t('obico.meter.label')}>
-      <!-- dir="ltr": the probability scale reads left to right in RTL too, like every chart. -->
       <svg viewBox="0 0 100 62" dir="ltr" aria-hidden="true">
         ${GAUGE_ZONES.map(
           (z) =>
-            html`<path class="zone ${z.level}" d=${gaugeArcPath(z.from + (z.from === 0 ? 0 : gap), z.to - (z.to === 1 ? 0 : gap))} />`,
+            svg`<path class="zone ${z.level}" d=${gaugeArcPath(z.from + (z.from === 0 ? 0 : gap), z.to - (z.to === 1 ? 0 : gap))} />`,
         )}
         ${live
-          ? html`
+          ? svg`
               <circle class="ball" cx=${ball.x.toFixed(2)} cy=${ball.y.toFixed(2)} r="4.5" />
               <text class="gauge-level" x="50" y="40">${levelLabel(t, p)}</text>
               <text class="gauge-pct" x="50" y="52">${Math.round(p * 100)}%</text>
             `
-          : html`<g class="eye-off" transform="translate(41 25) scale(0.75)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          : svg`<g class="eye-off" transform="translate(41 25) scale(0.75)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="1" y1="1" x2="23" y2="23" />
               <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
               <path d="M6.61 6.61A13.526 13.526 0 0 0 1 12s4 8 11 8a9.74 9.74 0 0 0 5.39-1.61" />
@@ -159,9 +157,11 @@ export const gaugeStyles = css`
     min-width: 0;
   }
   .gauge svg {
+    display: block;
     inline-size: min(100%, 220px);
     block-size: auto;
-    display: block;
+    aspect-ratio: 100 / 62; /* совпадает с viewBox 0 0 100 62 */
+    overflow: visible;
   }
   .gauge .zone {
     fill: none;
