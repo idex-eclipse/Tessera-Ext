@@ -45,6 +45,7 @@ export class ObicoChip extends HubElement {
         inline-size: max-content;
         min-inline-size: 104px;
         max-inline-size: 100%;
+        height: 100%;
         overflow: hidden;
         transition:
           background var(--transition-fast, 0.15s ease),
