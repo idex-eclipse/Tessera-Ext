@@ -23,6 +23,10 @@ export class ObicoChip extends HubElement {
       :host {
         block-size: 100%;
         gap: 0;
+        /* The shared styles use inline-size containment for panels. A chip must expose
+           its content width to the host strip, or its slot measures as zero. */
+        container-type: normal;
+        max-inline-size: 320px;
       }
       a {
         position: relative;
@@ -36,11 +40,11 @@ export class ObicoChip extends HubElement {
         background: var(--bg-surface);
         color: var(--text-primary);
         text-decoration: none;
-        /* The strip lays chips out by their intrinsic width: max-content keeps the chip
-           exactly as wide as its content, so the nowrap label never overflows onto the
-           state text (nothing inside truncates). */
+        /* Size by content until the host's width cap; longer localized text truncates
+           inside the chip so narrow strips can scroll by real slot widths. */
         inline-size: max-content;
         min-inline-size: 104px;
+        max-inline-size: 100%;
         overflow: hidden;
         transition:
           background var(--transition-fast, 0.15s ease),
@@ -92,18 +96,21 @@ export class ObicoChip extends HubElement {
         font-size: var(--font-size-lg);
         color: var(--accent);
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       a.missing .label {
         color: var(--text-muted);
       }
-      /* The state next to the label is short (a reason or "Possible failure"); a long
-         custom label takes the width it needs, the chip stretches for both. */
+      /* The state may be a long localized reason, so let it shrink with the label. */
       .sub {
-        flex-shrink: 0;
+        min-width: 0;
         font-size: var(--font-size-sm);
         font-weight: 400;
         color: var(--text-muted);
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .sub.failing {
         color: var(--danger);
