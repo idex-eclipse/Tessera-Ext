@@ -41,7 +41,7 @@
       "id": "tessera/obico",
       "dir": "obico",
       "name": "Obico",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "description": "Obico failure detection in Tessera: link the printer, watch the failure probability, answer alerts, see what the detection caught; settings in a tab of the Machine page",
       "author": "Tessera",
       "pluginApi": "0.13",
@@ -51,9 +51,9 @@
       "dependencies": {
         "@core/system": "4.0.0"
       },
-      "url": "obico-0.1.4.tar.gz",
-      "sha256": "de71e67e2d9a667de4e09ea53e8a4db982c6f1bd04adb0e94a401d6a000d44ea",
-      "size": 31958
+      "url": "obico-0.1.5.tar.gz",
+      "sha256": "44bbe0770d6855019e152af7a5a370d84c33e1894c08669a442f65b32ab9a358",
+      "size": 31995
     },
     {
       "id": "tessera/pa-autotune",
