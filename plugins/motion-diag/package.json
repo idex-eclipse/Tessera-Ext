@@ -1,6 +1,6 @@
 {
   "name": "tessera-plugin-motion-diag",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Motion diagnostics for Tessera: a browser port of Klipper's motan (capture, decode, analyze, graph, save)",
