@@ -11,7 +11,7 @@
 
 ## Требования
 
-- Tessera с plugin API **0.12** или новее и `@core/system` **4.0.0** или новее.
+- Tessera с plugin API **1.0** или новее и `@core/system` **4.0.0** или новее.
   `tessera-ext` не ставит плагин на более старую Tessera.
 - Moonraker с историей заданий (она включена по умолчанию): счётчики берутся из
   `server.history.totals`.

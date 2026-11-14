@@ -20,8 +20,8 @@ It works on two levels:
 
 ## Requirements
 
-- Tessera with plugin API **0.13** or newer and `@core/system` **4.0.0** or newer, with the
-  `tessera-ext` service enabled. It is on by default. A Tessera installed before 0.13 needs
+- Tessera with plugin API **1.0** or newer and `@core/system` **4.0.0** or newer, with the
+  `tessera-ext` service enabled. It is on by default. A Tessera installed before API 1.0 needs
   one `tessera update` on the printer.
 - [moonraker-obico](https://www.obico.io/docs/user-guides/klipper-setup/) installed on the
   printer. Without it the tab only says how to install it.

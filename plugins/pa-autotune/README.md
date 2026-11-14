@@ -24,7 +24,7 @@ the repositories.
 - Klipper with `autopa` and/or `kapat` installed from their repositories, and a load cell
   (`[load_cell]` or `[load_cell_probe]`) in the nozzle. Their installers also put the web UI on an
   nginx site (`/autopa/`, `/kapat/`).
-- Tessera with plugin API **0.8** or newer and `@core/calibrations` 3.0.0 or newer.
+- Tessera with plugin API **1.0** or newer and `@core/calibrations` 3.0.0 or newer.
 
 Nothing of the providers is copied into the plugin (both are AGPL-3.0): it only embeds their UI
 and watches for their G-code commands.
@@ -35,7 +35,7 @@ and watches for their G-code commands.
    autopa, `KAPAT_SWEEP` means KAPAT. The `autopa` / `kapat` objects in `objects/list` are a
    second hint. The check runs when the tab opens, after a Klipper restart and on **Check again**.
 2. One provider is shown at once. With two, a switcher appears; the last choice is remembered per
-   printer (`api.settings`). By default autopa comes first.
+   printer (`api.settingsFor(printerId)`). By default autopa comes first.
 3. None: the instructions for both.
 
 ## Where the web UI is
@@ -109,7 +109,7 @@ Bump `version` in `manifest.json`, run `npm run pack` (builds and writes
 
 | File | Integration point |
 |---|---|
-| `manifest.json` | `extensions[]`: point `@core/calibrations#tabs`, kind `tab`, no `available` (always shown); `pluginApi: "0.8"` |
+| `manifest.json` | `extensions[]`: point `@core/calibrations#tabs`, kind `tab`, no `available` (always shown); `pluginApi: "1.0"` |
 | `src/ui/autotune-tab.ts` | the contribution itself: states none / one / several providers, iframe, address field |
 | `src/providers.ts` | the providers as data: command, path, repository, install steps |
 | `src/detect.ts` | `printer.gcode.help` + `printer.objects.list` → installed providers |

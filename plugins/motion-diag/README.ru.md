@@ -12,7 +12,7 @@
 
 ## Требования
 
-- Tessera с plugin API **0.12** или новее и `@core/system` **4.0.0** или новее.
+- Tessera с plugin API **1.0** или новее и `@core/system` **4.0.0** или новее.
   `tessera-ext` не ставит плагин на более старую Tessera.
 - Klipper в состоянии *ready* на время записи. Для открытия сохранённого лога принтер не нужен.
 - Сырой мост Moonraker `/klippysocket`. Сайт nginx Tessera проксирует его так же, как

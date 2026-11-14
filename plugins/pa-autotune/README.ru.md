@@ -24,7 +24,7 @@ Klipper-модулей автокалибровки Pressure Advance: **[autopa]
 - Klipper с установленными из их репозиториев `autopa` и/или `kapat` и датчик усилия
   (`[load_cell]` или `[load_cell_probe]`) в сопле. Их установщики также кладут веб-интерфейс на
   сайт nginx (`/autopa/`, `/kapat/`).
-- Tessera с plugin API **0.8** или новее и `@core/calibrations` 3.0.0 или новее.
+- Tessera с plugin API **1.0** или новее и `@core/calibrations` 3.0.0 или новее.
 
 Код провайдеров в плагин не копируется (оба под AGPL-3.0): он только встраивает их интерфейс и
 следит за их G-code командами.
@@ -35,7 +35,7 @@ Klipper-модулей автокалибровки Pressure Advance: **[autopa]
    autopa, `KAPAT_SWEEP` — KAPAT. Объекты `autopa` / `kapat` в `objects/list` — вторая подсказка.
    Проверка идёт при открытии вкладки, после перезапуска Klipper и по кнопке **Проверить снова**.
 2. Один провайдер показывается сразу. Если их два, появляется переключатель; последний выбор
-   запоминается на принтер (`api.settings`). По умолчанию первым идёт autopa.
+   запоминается на принтер (`api.settingsFor(printerId)`). По умолчанию первым идёт autopa.
 3. Ни одного: инструкции по обоим.
 
 ## Где веб-интерфейс
@@ -111,7 +111,7 @@ Settings → Plugins → Install «PA Autotune» и F5 после правок �
 
 | Файл | Точка интеграции |
 |---|---|
-| `manifest.json` | `extensions[]`: точка `@core/calibrations#tabs`, kind `tab`, без `available` (показывается всегда); `pluginApi: "0.8"` |
+| `manifest.json` | `extensions[]`: точка `@core/calibrations#tabs`, kind `tab`, без `available` (показывается всегда); `pluginApi: "1.0"` |
 | `src/ui/autotune-tab.ts` | само дополнение: состояния «нет / один / несколько провайдеров», iframe, поле адреса |
 | `src/providers.ts` | провайдеры как данные: команда, путь, репозиторий, шаги установки |
 | `src/detect.ts` | `printer.gcode.help` + `printer.objects.list` → установленные провайдеры |

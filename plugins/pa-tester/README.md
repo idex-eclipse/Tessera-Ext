@@ -20,7 +20,7 @@ graph of the load cell. Written in [Lit](https://lit.dev), like the Shake&Tune p
   Klipper**. It needs NumPy in the Klipper environment and a load cell (`[load_cell]` or
   `[load_cell_probe]`) in the nozzle; `max_extrude_cross_section` in `[extruder]` must allow
   the high flow.
-- Tessera with plugin API **0.9** or newer (for the graph stream, see below) and
+- Tessera with plugin API **1.0** or newer and
   `@core/calibrations` 3.0.0 or newer. `tessera-ext` refuses to install on an older Tessera.
 
 The tab is always in Calibrations. On a printer without `[pa_tester]` it shows how to set the
@@ -119,7 +119,7 @@ Bump `version` in `manifest.json`, run `npm run pack` (builds and writes
 
 | File | Integration point |
 |---|---|
-| `manifest.json` | `extensions[]`: point `@core/calibrations#tabs`, kind `tab`, no `available` (always shown); `pluginApi: "0.9"` |
+| `manifest.json` | `extensions[]`: point `@core/calibrations#tabs`, kind `tab`, no `available` (always shown); `pluginApi: "1.0"` |
 | `src/ui/pa-tab.ts` | the contribution itself: a whole tab, command form, preview, result, graph panel |
 | `src/ui/pa-controller.ts` | Moonraker subscriptions bound to the element and the active printer; owns the graph source |
 | `src/force-source.ts` | `klippyStream` of the host, with the status subscription as fallback |

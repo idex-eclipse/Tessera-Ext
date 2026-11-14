@@ -5,121 +5,121 @@
       "id": "tessera/maintenance",
       "dir": "maintenance",
       "name": "Maintenance",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Printer maintenance reminders in a tab of the Machine page: intervals by print hours, prints, days and filament, follow-up chains and a pre-print check",
       "author": "Tessera",
-      "pluginApi": "0.12",
+      "pluginApi": "1.0",
       "requires": [
         "@core/system"
       ],
       "dependencies": {
         "@core/system": "4.0.0"
       },
-      "url": "maintenance-0.1.0.tar.gz",
-      "sha256": "a734802ffad77c4a74b83e1cfecf6e9ca23d30dd7e3e1e5e114c3560e993f3a0",
-      "size": 40825
+      "url": "maintenance-0.1.1.tar.gz",
+      "sha256": "f48c277b6b6e0f43c3b5c576e85caabd9d40db82ccf019d509c6a5cda6522436",
+      "size": 40826
     },
     {
       "id": "tessera/motion-diag",
       "dir": "motion-diag",
       "name": "Motion diagnostics",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Klipper motan in the browser: record motion, accelerometer, load cell and stallguard data, analyse it and look at the graphs, in a tab of the Machine page",
       "author": "Tessera",
-      "pluginApi": "0.12",
+      "pluginApi": "1.0",
       "requires": [
         "@core/system"
       ],
       "dependencies": {
         "@core/system": "4.0.0"
       },
-      "url": "motion-diag-0.1.0.tar.gz",
-      "sha256": "f3cdb0cee74de6803c263e3cd8e1469a4d0627b3d131cc914d416e984d19c3e5",
-      "size": 74387
+      "url": "motion-diag-0.1.1.tar.gz",
+      "sha256": "f8d9acb874bc551c5b4181e85d5764c52f920017a29f611f3c2bc979e01ac792",
+      "size": 74507
     },
     {
       "id": "tessera/obico",
       "dir": "obico",
       "name": "Obico",
-      "version": "0.1.7",
+      "version": "0.1.8",
       "description": "Obico failure detection in Tessera: link the printer, watch the failure probability, answer alerts, see what the detection caught; settings in a tab of the Machine page",
       "author": "Tessera",
-      "pluginApi": "0.13",
+      "pluginApi": "1.0",
       "requires": [
         "@core/system"
       ],
       "dependencies": {
         "@core/system": "4.0.0"
       },
-      "url": "obico-0.1.7.tar.gz",
-      "sha256": "3f576ffe2faf5cd1a68aacac556c2d4abf78a71a39b2fed63b9dc67cf0e7de38",
-      "size": 31998
+      "url": "obico-0.1.8.tar.gz",
+      "sha256": "1602a560eb07852873cf33711b0593a54679598181f25f5e41d44e66e20b0736",
+      "size": 32079
     },
     {
       "id": "tessera/pa-autotune",
       "dir": "pa-autotune",
       "name": "PA Autotune",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "autopa and KAPAT (load cell Pressure Advance auto-calibration) in a PA Autotune tab of Calibrations: picks the installed provider and embeds its web UI",
       "author": "Tessera",
-      "pluginApi": "0.8",
+      "pluginApi": "1.0",
       "requires": [
         "@core/calibrations"
       ],
       "dependencies": {
         "@core/calibrations": "3.0.0"
       },
-      "url": "pa-autotune-0.1.0.tar.gz",
-      "sha256": "262b7ff05a0859a75d3184e1817c9df97544fca01bf7a2f9165d3c7998ef18db",
-      "size": 15522
+      "url": "pa-autotune-0.1.1.tar.gz",
+      "sha256": "2c73ad18d371b73665629242724f4206314d9452ca97eb6d74b70f5e8ca18bc5",
+      "size": 15679
     },
     {
       "id": "tessera/pa-tester",
       "dir": "pa-tester",
       "name": "Pressure Advance tester",
-      "version": "0.3.3",
+      "version": "0.3.4",
       "description": "Klipper pa_tester in a Pressure Advance tab of Calibrations: run the measurement, read the result, watch the load cell live",
       "author": "Tessera",
-      "pluginApi": "0.9",
+      "pluginApi": "1.0",
       "requires": [
         "@core/calibrations"
       ],
       "dependencies": {
         "@core/calibrations": "3.0.0"
       },
-      "url": "pa-tester-0.3.3.tar.gz",
-      "sha256": "9246d0e177ea305bbf51821e3a15b5bd0d70cce9f7f56a69265e0f33ab5b2120",
-      "size": 58637
+      "url": "pa-tester-0.3.4.tar.gz",
+      "sha256": "189fc0b5cc831cf6332b423ea88f2d0f675656733347714cd3ca3c305dc2765b",
+      "size": 58666
     },
     {
       "id": "tessera/shaketune",
       "dir": "shaketune",
       "name": "Shake&Tune",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "description": "Klippain Shake&Tune in the Input Shaper tab of Calibrations: run its commands, read the recommendations, browse the graphs",
       "author": "Tessera",
-      "pluginApi": "0.8",
+      "pluginApi": "1.0",
       "requires": [
         "@core/calibrations"
       ],
       "dependencies": {
         "@core/calibrations": "3.0.0"
       },
-      "url": "shaketune-0.1.3.tar.gz",
-      "sha256": "57b2614829721488a0112472bfe52087b732aee2c854c778d8b5d695137cabe3",
-      "size": 25490
+      "url": "shaketune-0.1.4.tar.gz",
+      "sha256": "1d5e2907d505120d9015dc72b8856f265c693ef82692268b65b49c66de0333c9",
+      "size": 25538
     },
     {
       "id": "tessera/spoolman",
       "dir": "spoolman",
       "name": "Spoolman",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Spoolman integration: spools per tool, pre-print filament check",
       "author": "Tessera",
-      "pluginApi": 1,
-      "url": "spoolman-0.1.0.tar.gz",
-      "sha256": "1e2f2dc908484e9bc7aceb1be1111f5168eeb90456b8b96683ef09b1642c36d1",
-      "size": 20753
+      "pluginApi": "1.0",
+      "url": "spoolman-0.1.1.tar.gz",
+      "sha256": "192d26d295ebe072885396edfcc0efab7b05410c63f6f6073dfe34cc5afcf38f",
+      "size": 20772
     }
   ]
 }

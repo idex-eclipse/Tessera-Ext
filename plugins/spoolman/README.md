@@ -13,6 +13,7 @@ exercises the bare Custom Element contract. Nothing in it relies on the SDK wrap
 
 ## Requirements
 
+- Tessera with plugin API **1.0** or newer.
 - Moonraker with the `[spoolman]` section (`server: http://…:7912`).
 - Multi-tool printers: Klipper `[save_variables]` and tool macros `[gcode_macro T0]`,
   `[gcode_macro T1]`, …

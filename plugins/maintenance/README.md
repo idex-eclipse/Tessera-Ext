@@ -11,7 +11,7 @@ a guard on the start of a print. Written in [Lit](https://lit.dev).
 
 ## Requirements
 
-- Tessera with plugin API **0.12** or newer and `@core/system` **4.0.0** or newer.
+- Tessera with plugin API **1.0** or newer and `@core/system` **4.0.0** or newer.
   `tessera-ext` refuses to install on an older Tessera.
 - Moonraker with its job history (it is on by default): the counters come from
   `server.history.totals`.

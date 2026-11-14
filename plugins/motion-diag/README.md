@@ -12,7 +12,7 @@ diagnostics** tab to the core *Machine* page through the extension point
 
 ## Requirements
 
-- Tessera with plugin API **0.12** or newer and `@core/system` **4.0.0** or newer.
+- Tessera with plugin API **1.0** or newer and `@core/system` **4.0.0** or newer.
   `tessera-ext` refuses to install on an older Tessera.
 - Klipper in the *ready* state while you record. Opening a saved log needs no printer.
 - Moonraker's raw Klippy bridge `/klippysocket`. The Tessera nginx site proxies it like

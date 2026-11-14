@@ -19,7 +19,7 @@
   `generic-cartesian` форка dmbutyugin/klipper, **в основном Klipper его нет**. Нужны NumPy
   в окружении Klipper и датчик усилия (`[load_cell]` или `[load_cell_probe]`) в сопле;
   `max_extrude_cross_section` в `[extruder]` должен допускать большой расход.
-- Tessera с plugin API **0.9** или новее (для потока графика, см. ниже) и
+- Tessera с plugin API **1.0** или новее и
   `@core/calibrations` 3.0.0 или новее. На более старую Tessera `tessera-ext` плагин не ставит.
 
 Вкладка в Calibrations есть всегда. На принтере без `[pa_tester]` она показывает, как подключить
