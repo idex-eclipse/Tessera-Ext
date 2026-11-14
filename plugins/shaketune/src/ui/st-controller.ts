@@ -26,7 +26,7 @@ import type { TesseraElement } from '../base-element';
  * host.requestUpdate() when its data changes. Here it owns every subscription,
  * so the element itself is only a view.
  *
- * Bound to the ACTIVE printer (`api.moonraker()`): our tab is a part of the
+ * Bound to the active printer by ID: our tab is a part of the
  * Calibrations page, which always shows the active printer. On a printer change
  * the controller unbinds and binds to the new one; the run state of the old
  * printer stays in run-store for when the user comes back.
@@ -86,24 +86,29 @@ export class StController implements ReactiveController {
     const api = this.#host.api;
     if (!api || this.#handle || !this.#host.isConnected) return;
 
-    // A printer change re-binds everything (other WebSocket, other state).
+    // A printer change or removal re-binds everything (other WebSocket, other state).
+    const rebind = () => {
+      this.#unbind();
+      this.#bind();
+      this.#host.requestUpdate();
+    };
     this.#off.push(
-      api.onPrinterChange(() => {
-        this.#unbind();
-        this.#bind();
-        this.#host.requestUpdate();
+      api.onPrinterChange(rebind),
+      api.onPrintersChange((printers) => {
+        if (this.#printerId && !printers.some((printer) => printer.id === this.#printerId)) rebind();
       }),
     );
 
-    if (!api.printer.id) return;
+    const printerId = api.printer.id;
+    if (!printerId) return;
     let handle: MoonrakerProxyHandle;
     try {
-      handle = api.moonraker();
+      handle = api.moonrakerFor(printerId);
     } catch {
       return; // no active printer
     }
     this.#handle = handle;
-    this.#printerId = api.printer.id;
+    this.#printerId = printerId;
     const pid = this.#printerId;
 
     this.#off.push(subscribe(pid, () => this.#host.requestUpdate()));
@@ -154,6 +159,7 @@ export class StController implements ReactiveController {
     for (const off of this.#off) off();
     this.#off = [];
     this.#handle = null;
+    this.#printerId = '';
     if (this.#filesTimer) clearTimeout(this.#filesTimer);
     this.#filesTimer = null;
   }

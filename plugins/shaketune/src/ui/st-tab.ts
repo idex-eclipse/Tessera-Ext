@@ -39,7 +39,7 @@ const HELP_ICON = html`<svg width="15" height="15" viewBox="0 0 24 24" fill="non
  * panels are simply not rendered while we replace the tab — Shake&Tune has
  * COMPARE_BELTS_RESPONSES and its own result folders.
  *
- * Settings (`api.settings`, per printer): the last command, field values per
+ * Settings (`api.settingsFor(printerId)`, per printer): the last command, field values per
  * command, the gallery filter, the damping checkbox.
  */
 export class ShakeTuneTab extends TesseraElement {
@@ -107,7 +107,7 @@ export class ShakeTuneTab extends TesseraElement {
   }
 
   #readSettings(): void {
-    const s = this.api!.settings;
+    const s = this.api!.settingsFor(this.#settingsFor);
     const cmd = s.get<CommandId>('command');
     this.command = COMMANDS.some((c) => c.id === cmd) ? cmd! : 'shaper';
     this.values = s.get<Partial<Record<CommandId, Record<string, string>>>>('values') ?? {};
@@ -116,7 +116,7 @@ export class ShakeTuneTab extends TesseraElement {
   }
 
   #save(key: string, value: unknown): void {
-    this.api?.settings.set(key, value);
+    if (this.api && this.#settingsFor) this.api.settingsFor(this.#settingsFor).set(key, value);
   }
 
   // ---------------------------------------------------------------- actions

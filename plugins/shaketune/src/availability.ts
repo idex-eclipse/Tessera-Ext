@@ -27,7 +27,7 @@ import type { MpuParams, PluginApi } from './sdk';
 export async function hasShakeTune(api: PluginApi, _params?: MpuParams): Promise<boolean> {
   setApi(api);
   try {
-    return (await readPrinterConfig(api.moonraker())).hasShakeTune;
+    return (await readPrinterConfig(api.moonrakerFor(api.printer.id))).hasShakeTune;
   } catch {
     return false;
   }

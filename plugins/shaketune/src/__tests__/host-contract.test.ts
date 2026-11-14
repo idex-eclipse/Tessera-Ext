@@ -14,6 +14,7 @@ type Handler = (params: unknown) => unknown;
 
 function createFakeApi(responses: Record<string, Handler>) {
   const unsubscribed = vi.fn();
+  const printerListeners = new Set<() => void>();
   const notifyHandlers = new Map<string, (params: unknown) => void>();
   const handle = {
     readyState: 'open',
@@ -42,17 +43,24 @@ function createFakeApi(responses: Record<string, Handler>) {
     pluginId: 'tessera/shaketune',
     printer,
     printers: [printer],
-    moonraker: () => handle,
-    moonrakerFor: () => handle,
-    onPrinterChange: () => unsubscribed,
+    moonrakerFor: vi.fn(() => handle),
+    onPrinterChange: (callback: () => void) => {
+      printerListeners.add(callback);
+      return () => { printerListeners.delete(callback); unsubscribed(); };
+    },
     onPrintersChange: () => () => {},
     onLocaleChange: () => unsubscribed,
     onThemeChange: () => () => {},
     i18n: { locale: 'en', t: (key: string) => key },
-    settings: { get: (k: string) => store[k], set: (k: string, v: unknown) => (store[k] = v), onChange: () => () => {} },
+    settingsFor: () => ({ get: (k: string) => store[k], set: (k: string, v: unknown) => (store[k] = v), onChange: () => () => {} }),
     guards: { resume: vi.fn() },
   } as unknown as PluginApi;
-  return { api, handle, unsubscribed, notifyHandlers };
+  // The extension remains mounted across printer tab changes.
+  const switchPrinter = (id: string) => {
+    printer.id = id;
+    for (const listener of [...printerListeners]) listener();
+  };
+  return { api, handle, unsubscribed, notifyHandlers, switchPrinter };
 }
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
@@ -126,6 +134,27 @@ describe('host contract', () => {
 
     expect(await mod.guardShakeTune({ method: 'printer.print.start', params: {}, targetPrinterId: 'p1' }, 't', { targetPrinterId: 'p1' }))
       .toEqual({ action: 'allow' });
+  });
+
+  it('rebinds Moonraker subscriptions when the active printer changes', async () => {
+    const el = document.createElement('tessera-shaketune-tab') as HTMLElement & {
+      api: PluginApi; params: unknown; updateComplete: Promise<boolean>;
+    };
+    el.api = fake.api;
+    el.params = {};
+    document.body.append(el);
+    await flush();
+    await el.updateComplete;
+    const before = fake.handle.subscribe.mock.calls.length;
+    const released = fake.unsubscribed.mock.calls.length;
+    fake.switchPrinter('p2');
+    await flush();
+    await el.updateComplete;
+    expect(fake.api.moonrakerFor).toHaveBeenCalledWith('p2');
+    expect(fake.handle.subscribe.mock.calls.length).toBeGreaterThan(before);
+    expect(fake.unsubscribed.mock.calls.length).toBeGreaterThan(released);
+    el.remove();
+    fake.switchPrinter('p1');
   });
 
   it('mounts like the host, renders into a shadow root, re-renders on params, releases on removal', async () => {
