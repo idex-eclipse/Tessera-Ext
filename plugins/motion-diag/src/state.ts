@@ -80,10 +80,12 @@ export class DiagStore {
   private session: CaptureSession | null = null;
   private abort: AbortController | null = null;
   private printerId = '';
+  /** Distinguishes a new binding even when tabs switch back to the same printer. */
+  private bindingEpoch = 0;
   state: DiagState = DiagStore.initial();
 
-  /** `getHandle` returns the Moonraker handle of the active printer. */
-  constructor(private readonly getHandle: () => Pick<MoonrakerProxyHandle, 'klippyStream' | 'klippyRequest'>) {}
+  /** `getHandle` resolves the printer bound to this store, even after the tab unmounts. */
+  constructor(private readonly getHandle: (printerId: string) => Pick<MoonrakerProxyHandle, 'klippyStream' | 'klippyRequest'>) {}
 
   private static initial(): DiagState {
     return {
@@ -128,18 +130,25 @@ export class DiagStore {
 
   /** Called by the tab on mount: a different printer means the old capture is not this machine's. */
   bindPrinter(printerId: string): void {
+    if (this.printerId === printerId) return;
     if (this.printerId && this.printerId !== printerId) this.reset();
     this.printerId = printerId;
+    this.bindingEpoch++;
   }
 
   // ---- sources ----
 
   async refreshSources(): Promise<void> {
+    if (!this.printerId) return;
+    const printerId = this.printerId;
+    const bindingEpoch = this.bindingEpoch;
     this.state.discover = 'loading';
     this.state.discoverError = '';
     this.emit();
     try {
-      const sources = await discoverSources(this.getHandle());
+      const sources = await discoverSources(this.getHandle(printerId));
+      // A query started for an earlier tab must not fill the next printer's catalog.
+      if (bindingEpoch !== this.bindingEpoch) return;
       const keep = new Set(sources.map((s) => s.id));
       const selected = new Set([...this.state.selected].filter((id) => keep.has(id)));
       if (selected.size === 0) for (const s of sources) if (s.byDefault) selected.add(s.id);
@@ -147,6 +156,7 @@ export class DiagStore {
       this.state.selected = selected;
       this.state.discover = 'ready';
     } catch (e) {
+      if (bindingEpoch !== this.bindingEpoch) return;
       this.state.discover = 'error';
       this.state.discoverError = e instanceof Error ? e.message : String(e);
     }
@@ -174,9 +184,9 @@ export class DiagStore {
   }
 
   async startRecording(): Promise<void> {
-    if (this.recording) return;
+    if (!this.printerId || this.recording) return;
     const chosen = this.state.sources.filter((s) => this.state.selected.has(s.id));
-    const session = new CaptureSession(this.getHandle(), chosen, {
+    const session = new CaptureSession(this.getHandle(this.printerId), chosen, {
       limits: { maxSeconds: this.state.maxSeconds },
       onChange: (snap) => {
         if (this.session !== session) return;

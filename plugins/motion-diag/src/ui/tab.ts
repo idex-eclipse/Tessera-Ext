@@ -12,8 +12,8 @@ import { styles } from './styles';
 let store: DiagStore | null = null;
 
 function storeFor(api: PluginApi): DiagStore {
-  // `moonraker()` follows the active printer, so the handle is resolved on every use.
-  store ??= new DiagStore(() => api.moonraker());
+  // The store outlives the tab, so every capture uses its bound printer ID.
+  store ??= new DiagStore((printerId) => api.moonrakerFor(printerId));
   return store;
 }
 
