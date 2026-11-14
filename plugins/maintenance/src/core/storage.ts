@@ -1,5 +1,5 @@
 /**
- * Reading and writing the plugin's data through the host's `api.settings`.
+ * Reading and writing the plugin's data through the host's `api.settingsFor`.
  *
  * The host mirrors plugin settings into the Moonraker database of the printer (see the
  * host's docs/en/settings.md), so this file has no code of its own for persistence,

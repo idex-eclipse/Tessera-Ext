@@ -1,7 +1,7 @@
 /**
  * The live side of the plugin for ONE printer: it loads the saved state, follows the
  * Moonraker totals and the running print, keeps the evaluation up to date and saves every
- * change through `api.settings`.
+ * change through the printer-bound `api.settingsFor` handle.
  *
  * It is plain TypeScript with injected dependencies (no Lit, no host imports), so it can be
  * tested with fakes. The UI elements only render it and call its actions; the notification

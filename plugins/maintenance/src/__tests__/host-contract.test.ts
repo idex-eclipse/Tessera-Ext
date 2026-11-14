@@ -118,7 +118,7 @@ describe('host contract', () => {
     expect(customElements.get(e.element)).toBeDefined();
     expect(e).toMatchObject({ point: '@core/system#tabs', kind: 'tab', version: 1 });
     expect(manifest.dependencies).toEqual({ '@core/system': '4.0.0' });
-    expect(manifest.pluginApi).toBe('0.12');
+    expect(manifest.pluginApi).toBe('1.0');
     expect(Object.keys(mod.locales)).toEqual(manifest.locales);
     expect(strings[e.titleKey]).toBeTruthy();
     expect(manifest.overlays).toHaveLength(1);

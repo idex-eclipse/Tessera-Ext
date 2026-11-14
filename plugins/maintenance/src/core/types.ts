@@ -2,7 +2,7 @@
  * Data model of the maintenance plugin.
  *
  * Everything here is plain JSON: the whole state is stored through the host's
- * `api.settings`, which mirrors it into the Moonraker database. Keep it small (one record
+ * `api.settingsFor`, which mirrors it into the Moonraker database. Keep it small (one record
  * per printer) and versioned (`MaintenanceState.v`).
  *
  * The model is a graph: a TASK has OUTCOMES (the buttons on its card), and an outcome can
