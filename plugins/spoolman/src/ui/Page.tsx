@@ -5,7 +5,7 @@ import { getSpoolmanServer } from '../moonraker';
 import { resolveSpoolmanUrl } from '../parse';
 import { useActivePrinter, useT } from './hooks';
 
-/** api.settings key: Spoolman address typed by the user (per printer). */
+/** settingsFor key: Spoolman address typed by the user (per printer). */
 const URL_KEY = 'spoolmanUrl';
 
 /**
@@ -16,7 +16,7 @@ const URL_KEY = 'spoolmanUrl';
  * must be reachable from the browser. Default: Moonraker's `[spoolman] server`
  * with a loopback host replaced by the printer host; the user can override it.
  *
- * Settings: `api.settings` is scoped to the active printer (or shared, if the
+ * Settings: `api.settingsFor(printer.id)` is scoped to the displayed printer (or shared, if the
  * user turned on "sync settings" for this plugin) — the host decides, the
  * plugin just reads/writes keys. It is re-read when the printer changes.
  */
@@ -29,7 +29,7 @@ export function Page({ api }: SurfaceProps) {
 
   useEffect(() => {
     if (!printer.id) return;
-    const saved = api.settings.get<string>(URL_KEY) || undefined;
+    const saved = api.settingsFor(printer.id).get<string>(URL_KEY) || undefined;
     setManual(saved);
     setDraft(saved ?? '');
 
@@ -48,12 +48,12 @@ export function Page({ api }: SurfaceProps) {
 
   function save() {
     const value = draft.trim();
-    api.settings.set(URL_KEY, value || null);
+    api.settingsFor(printer.id).set(URL_KEY, value || null);
     setManual(value || undefined);
   }
 
   function reset() {
-    api.settings.set(URL_KEY, null);
+    api.settingsFor(printer.id).set(URL_KEY, null);
     setManual(undefined);
     setDraft('');
   }

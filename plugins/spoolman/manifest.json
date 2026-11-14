@@ -1,7 +1,8 @@
 {
   "id": "tessera/spoolman",
   "name": "Spoolman",
-  "version": "0.1.0",
+  "version": "0.1.1",
+  "pluginApi": "1.0",
   "description": "Spoolman integration: spools per tool, pre-print filament check",
   "author": "Tessera",
   "entry": "index.js",

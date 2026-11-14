@@ -28,21 +28,25 @@ function createFakeApi(responses: Record<string, Handler>) {
     poll: vi.fn(() => () => {}),
   };
   const printer = { id: 'p1', name: 'Voron', url: '192.168.1.5' };
+  const stored: Record<string, Record<string, unknown>> = { p1: {} };
   const api = {
     pluginId: 'tessera/spoolman',
     printer,
     printers: [printer],
-    moonraker: () => handle,
     moonrakerFor: () => handle,
     onPrinterChange: () => () => {},
     onPrintersChange: () => () => {},
     onLocaleChange: () => () => {},
     onThemeChange: () => () => {},
     i18n: { locale: 'en', t: (key: string) => key },
-    settings: { get: () => undefined, set: () => {}, onChange: () => () => {} },
+    settingsFor: vi.fn((id: string) => ({
+      get: (key: string) => stored[id]?.[key],
+      set: (key: string, value: unknown) => { (stored[id] ??= {})[key] = value; },
+      onChange: () => () => {},
+    })),
     guards: { resume },
   } as unknown as PluginApi;
-  return { api, handle, resume };
+  return { api, handle, resume, stored };
 }
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
@@ -50,7 +54,7 @@ const flush = () => new Promise((r) => setTimeout(r, 0));
 let mod: typeof import('../index');
 const spool = { id: 3, remaining_weight: 500, filament: { id: 1, material: 'PLA', name: 'Basic', color_hex: 'ff0000', weight: 1000 } };
 let metadata: Record<string, unknown> = {};
-const { api, handle, resume } = createFakeApi({
+const { api, handle, resume, stored } = createFakeApi({
   'server.info': () => ({ components: ['spoolman'] }),
   'printer.objects.list': () => ({ objects: ['extruder'] }),
   'server.spoolman.get_spool_id': () => ({ spool_id: 3 }),
@@ -155,5 +159,22 @@ describe('host contract', () => {
     expect(el.textContent).toContain('#3 Basic');
     el.remove();
     expect(el.innerHTML).toBe('');
+  });
+
+  it('stores the page address in the displayed printer namespace', async () => {
+    const el = document.createElement('tessera-spoolman-page') as HTMLElement & { api: PluginApi; params: unknown };
+    el.api = api;
+    el.params = {};
+    document.body.append(el);
+    await flush();
+    await flush();
+    expect(api.settingsFor).toHaveBeenCalledWith('p1');
+    const input = el.querySelector<HTMLInputElement>('input[type="url"]')!;
+    input.value = 'http://spoolman.local:7912';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await flush();
+    el.querySelector<HTMLButtonElement>('button')!.click();
+    expect(stored.p1!.spoolmanUrl).toBe('http://spoolman.local:7912');
+    el.remove();
   });
 });
