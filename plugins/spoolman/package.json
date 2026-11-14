@@ -1,6 +1,6 @@
 {
   "name": "tessera-plugin-spoolman",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Spoolman integration for Tessera: spools per tool, pre-print filament check",
