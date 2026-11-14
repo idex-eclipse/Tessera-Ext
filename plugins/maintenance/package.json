@@ -1,6 +1,6 @@
 {
   "name": "tessera-plugin-maintenance",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Printer maintenance for Tessera: reminders by print hours, prints, days and filament, follow-up chains, a pre-print check",
