@@ -41,6 +41,8 @@ export class ObicoTab extends TesseraElement {
   declare log: LogView;
 
   #state: ObicoState | null = null;
+  /** The visible tab's target is stable during asynchronous log requests. */
+  #printerId = '';
   #unsub: (() => void) | null = null;
 
   constructor() {
@@ -57,6 +59,9 @@ export class ObicoTab extends TesseraElement {
     this.#bind(api);
     // A printer switch keeps the tab mounted: rebuild the model for the new printer.
     this.track(api.onPrinterChange(() => this.#bind(api)));
+    this.track(api.onPrintersChange(() => {
+      if (this.#printerId && !api.printers.some((printer) => printer.id === this.#printerId)) this.#bind(api);
+    }));
     this.track(() => this.#release());
   }
 
@@ -65,7 +70,12 @@ export class ObicoTab extends TesseraElement {
     this.confirmRelink = false;
     this.notice = null;
     this.log = { kind: 'hidden' };
-    const state = new ObicoState(api.moonraker());
+    this.#printerId = api.printer.id;
+    if (!this.#printerId) {
+      this.snap = null;
+      return;
+    }
+    const state = new ObicoState(api.moonrakerFor(this.#printerId));
     this.#state = state;
     this.snap = state.snapshot;
     this.#unsub = state.subscribe(() => {
@@ -106,12 +116,13 @@ export class ObicoTab extends TesseraElement {
     }
     this.log = { kind: 'loading' };
     try {
-      const text = await fetchLogTail(api.moonraker(), ref);
+      const text = await fetchLogTail(api.moonrakerFor(this.#printerId), ref);
       if (state !== this.#state) return;
       if (text === null) this.log = { kind: 'message', text: this.t('obico.service.logMissing') };
       else if (!text.trim()) this.log = { kind: 'message', text: this.t('obico.service.logEmpty') };
       else this.log = { kind: 'text', text };
     } catch (e) {
+      if (state !== this.#state) return;
       this.log = { kind: 'message', text: this.t('obico.error', { error: e instanceof Error ? e.message : String(e) }) };
     }
   }

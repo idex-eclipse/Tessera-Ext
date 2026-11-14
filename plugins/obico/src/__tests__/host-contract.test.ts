@@ -106,8 +106,7 @@ function createFakeApi(responses: Record<string, Handler>, opts: { configured?: 
     pluginId: 'tessera/obico',
     printer,
     printers: [printer],
-    moonraker: () => handle,
-    moonrakerFor: () => handle,
+    moonrakerFor: vi.fn(() => handle),
     onPrinterChange: () => unsubscribed,
     onPrintersChange: () => () => {},
     onLocaleChange: () => unsubscribed,
@@ -266,6 +265,11 @@ describe('host contract', () => {
     button(el, 'obico.service.restart')!.click();
     await flush();
     expect(fake.handle.request).toHaveBeenCalledWith('machine.services.restart', { service: 'moonraker-obico' });
+
+    // The service log is read from the same printer as the tab model.
+    button(el, 'obico.service.showLog')!.click();
+    await flush();
+    expect(fake.api.moonrakerFor).toHaveBeenCalledWith('p1');
 
     // Re-link asks first: nothing is sent until the confirmation.
     button(el, 'obico.link.relink')!.click();

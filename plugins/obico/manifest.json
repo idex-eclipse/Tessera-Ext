@@ -1,11 +1,11 @@
 {
   "id": "tessera/obico",
   "name": "Obico",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Obico failure detection in Tessera: link the printer, watch the failure probability, answer alerts, see what the detection caught; settings in a tab of the Machine page",
   "author": "Tessera",
   "entry": "index.js",
-  "pluginApi": "0.13",
+  "pluginApi": "1.0",
   "dependencies": { "@core/system": "4.0.0" },
   "locales": ["en", "ru"],
 
