@@ -1,11 +1,11 @@
 {
   "id": "tessera/pa-tester",
   "name": "Pressure Advance tester",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Klipper pa_tester in a Pressure Advance tab of Calibrations: run the measurement, read the result, watch the load cell live",
   "author": "Tessera",
   "entry": "index.js",
-  "pluginApi": "0.9",
+  "pluginApi": "1.0",
   "dependencies": { "@core/calibrations": "3.0.0" },
   "locales": ["en", "ru"],
 

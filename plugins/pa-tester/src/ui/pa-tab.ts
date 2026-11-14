@@ -55,7 +55,7 @@ const fmt = (n: number | null | undefined, digits = 4): string => (n === null ||
  * (command, parameters, G-code preview, run, result) and "Load cell" (live
  * trace of the force sensor, the way the Heaters tab draws a temperature).
  *
- * Settings (`api.settings`, per printer): command, method, field values, the
+ * Settings (`api.settingsFor(printerId)`, per printer): command, method, field values, the
  * state, window, display filter and mains filter of the chart.
  */
 export class PaTesterTab extends TesseraElement {
@@ -143,7 +143,7 @@ export class PaTesterTab extends TesseraElement {
   }
 
   #readSettings(): void {
-    const s = this.api!.settings;
+    const s = this.api!.settingsFor(this.#settingsFor);
     const cmd = s.get<CommandId>('command');
     this.command = COMMANDS.some((c) => c.id === cmd) ? cmd! : 'test';
     const method = s.get<PaMethod>('method');
@@ -160,7 +160,7 @@ export class PaTesterTab extends TesseraElement {
   }
 
   #save(key: string, value: unknown): void {
-    this.api?.settings.set(key, value);
+    if (this.api && this.#settingsFor) this.api.settingsFor(this.#settingsFor).set(key, value);
   }
 
   #hasSensor(): boolean {

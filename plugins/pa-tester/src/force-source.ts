@@ -11,7 +11,7 @@ import type { MoonrakerProxyHandle } from './sdk';
  *    Moonraker's raw Klippy bridge and delivers every sample the sensor
  *    produces (tens to hundreds per second). The plugin opens no socket itself.
  * 2. `status` — fallback when the bridge is not reachable (nginx without
- *    `/klippysocket`, mixed content) or the host is older than plugin API 0.9:
+ *    `/klippysocket`, mixed content):
  *    the regular status subscription of the load cell object, about 4 Hz.
  *
  * The stream asks Klipper to push every sample until it is cancelled, so the

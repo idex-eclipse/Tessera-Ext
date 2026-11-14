@@ -24,6 +24,7 @@ type Handler = (params: unknown) => unknown;
 
 function createFakeApi(responses: Record<string, Handler>) {
   const unsubscribed = vi.fn();
+  const printerListeners = new Set<() => void>();
   const streamUnreg = vi.fn();
   const notifyHandlers = new Map<string, (params: unknown) => void>();
   const streams: Array<{ method: string; params: unknown; onData: (d: unknown) => void; onStatus: (s: string) => void }> = [];
@@ -64,17 +65,24 @@ function createFakeApi(responses: Record<string, Handler>) {
     pluginId: 'tessera/pa-tester',
     printer,
     printers: [printer],
-    moonraker: () => handle,
-    moonrakerFor: () => handle,
-    onPrinterChange: () => unsubscribed,
+    moonrakerFor: vi.fn(() => handle),
+    onPrinterChange: (callback: () => void) => {
+      printerListeners.add(callback);
+      return () => { printerListeners.delete(callback); unsubscribed(); };
+    },
     onPrintersChange: () => () => {},
     onLocaleChange: () => unsubscribed,
     onThemeChange: () => unsubscribed,
     i18n: { locale: 'en', t: (key: string) => key },
-    settings: { get: (k: string) => store[k], set: (k: string, v: unknown) => (store[k] = v), onChange: () => () => {} },
+    settingsFor: () => ({ get: (k: string) => store[k], set: (k: string, v: unknown) => (store[k] = v), onChange: () => () => {} }),
     guards: { resume: vi.fn() },
   } as unknown as PluginApi;
-  return { api, handle, unsubscribed, streamUnreg, streams, notifyHandlers };
+  // The host keeps the element mounted when the active printer tab changes.
+  const switchPrinter = (id: string) => {
+    printer.id = id;
+    for (const listener of [...printerListeners]) listener();
+  };
+  return { api, handle, unsubscribed, streamUnreg, streams, notifyHandlers, switchPrinter };
 }
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
@@ -145,7 +153,7 @@ describe('host contract', () => {
     for (const o of manifest.overlays) expect(customElements.get(o.element), o.element).toBeDefined();
     expect(typeof (mod as Record<string, unknown>)[manifest.guards[0]!.handler]).toBe('function');
     expect(Object.keys(mod.locales)).toEqual(manifest.locales);
-    expect(manifest.pluginApi).toBe('0.9');
+    expect(manifest.pluginApi).toBe('1.0');
   });
 
   it('keeps en and ru in sync, and has the title the host shows on the tab', () => {
@@ -203,6 +211,21 @@ describe('host contract', () => {
     expect(
       await mod.guardPaTester({ method: 'printer.print.start', params: {}, targetPrinterId: 'p1' }, 't', { targetPrinterId: 'p1' }),
     ).toEqual({ action: 'allow' });
+  });
+
+  it('rebinds Moonraker subscriptions to the new printer while the tab stays mounted', async () => {
+    const el = await mount('tessera-pa-tester-tab');
+    const before = fake.handle.subscribe.mock.calls.length;
+    const released = fake.unsubscribed.mock.calls.length;
+    fake.switchPrinter('p2');
+    await flush();
+    await el.updateComplete;
+    expect(fake.api.moonrakerFor).toHaveBeenCalledWith('p2');
+    expect(fake.handle.subscribe.mock.calls.length).toBeGreaterThan(before);
+    expect(fake.unsubscribed.mock.calls.length).toBeGreaterThan(released);
+    el.remove();
+    fake.switchPrinter('p1');
+    fake.streams.length = 0;
   });
 
   it('mounts like the host, renders into a shadow root, streams the load cell, releases on removal', async () => {
