@@ -1,6 +1,6 @@
 import { PROVIDERS, providerById, type Provider, type ProviderId } from './providers';
 
-/** `api.settings` keys (per printer, the host decides about sync). */
+/** `api.settingsFor` keys (per printer, the host decides about sync). */
 export const SETTING_PROVIDER = 'provider';
 export const settingUrl = (id: ProviderId): string => `url.${id}`;
 

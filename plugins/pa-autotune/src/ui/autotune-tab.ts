@@ -43,7 +43,7 @@ const RELOAD_ICON = html`<svg width="15" height="15" viewBox="0 0 24 24" fill="n
  * frame is a direct browser → provider connection, not Moonraker's proxy: its
  * address is searched and checked in url.ts and can be typed by the user.
  *
- * Settings (`api.settings`, per printer): `provider`, `url.<provider id>`.
+ * Settings (`api.settingsFor(printerId)`, per printer): `provider`, `url.<provider id>`.
  */
 export class PaAutotuneTab extends TesseraElement {
   static override styles = styles;
@@ -74,6 +74,8 @@ export class PaAutotuneTab extends TesseraElement {
   #bound = false;
   #offs: Array<() => void> = [];
   #offNotify: Array<() => void> = [];
+  /** Keep requests and settings on the printer selected when this tab bound. */
+  #printerId = '';
   /** Answers of an older query/probe must not overwrite a newer one. */
   #detectToken = 0;
   #resolveToken = 0;
@@ -108,6 +110,7 @@ export class PaAutotuneTab extends TesseraElement {
     this.#offs = [];
     this.#unsubscribeNotify();
     this.#bound = false;
+    this.#printerId = '';
     this.#detectToken++;
     this.#resolveToken++;
   }
@@ -117,25 +120,32 @@ export class PaAutotuneTab extends TesseraElement {
   #bind(api: NonNullable<typeof this.api>): void {
     this.#bound = true;
     this.#offs.push(api.onPrinterChange(() => void this.#start()));
+    this.#offs.push(api.onPrintersChange(() => {
+      if (this.#printerId && !api.printers.some((printer) => printer.id === this.#printerId)) void this.#start();
+    }));
     void this.#start();
   }
 
   /** Fresh state for the active printer. */
   async #start(): Promise<void> {
+    // Invalidate unfinished work before it can publish another printer's result.
+    this.#detectToken++;
+    this.#resolveToken++;
+    this.#printerId = this.api?.printer.id ?? '';
     this.detection = null;
     this.providerId = null;
     this.resolved = null;
     this.resolving = false;
     this.editing = false;
     this.#unsubscribeNotify();
-    if (!this.api?.printer.id) return;
+    if (!this.#printerId) return;
     this.#subscribeNotify();
     await this.#detect(true);
   }
 
   #subscribeNotify(): void {
     try {
-      const handle = this.api!.moonraker();
+      const handle = this.api!.moonrakerFor(this.#printerId);
       for (const event of REDETECT_EVENTS) {
         this.#offNotify.push(handle.onNotify(event, () => void this.#detect(false)));
       }
@@ -151,12 +161,13 @@ export class PaAutotuneTab extends TesseraElement {
 
   async #detect(initial: boolean): Promise<void> {
     const api = this.api;
-    if (!api?.printer.id) return;
+    const printerId = this.#printerId;
+    if (!api || !printerId) return;
     const mine = ++this.#detectToken;
     this.checking = true;
     let found: Detection;
     try {
-      found = await detectProviders(api.moonrakerFor(api.printer.id));
+      found = await detectProviders(api.moonrakerFor(printerId));
     } catch {
       found = { installed: [], hasLoadCell: false, unknown: true };
     }
@@ -166,7 +177,7 @@ export class PaAutotuneTab extends TesseraElement {
     if (found.unknown && this.detection) return;
     this.detection = found;
 
-    const picked = pickProvider(found.installed, api.settings.get(SETTING_PROVIDER));
+    const picked = pickProvider(found.installed, api.settingsFor(printerId).get(SETTING_PROVIDER));
     // The frame is reloaded only when the provider really changes (or on the first detection).
     if (initial || (picked?.id ?? null) !== this.providerId) {
       this.providerId = picked?.id ?? null;
@@ -176,9 +187,16 @@ export class PaAutotuneTab extends TesseraElement {
 
   async #resolve(): Promise<void> {
     const api = this.api;
+    const printerId = this.#printerId;
     const provider = this.providerId ? providerById(this.providerId) : undefined;
     const mine = ++this.#resolveToken;
-    if (!api || !provider) {
+    if (!api || !printerId || !provider) {
+      this.resolved = null;
+      this.resolving = false;
+      return;
+    }
+    const printer = api.printers.find((item) => item.id === printerId);
+    if (!printer) {
       this.resolved = null;
       this.resolving = false;
       return;
@@ -186,9 +204,9 @@ export class PaAutotuneTab extends TesseraElement {
     this.resolving = true;
     this.resolved = null;
     const result = await resolveUrl(provider, {
-      manual: api.settings.get<string>(settingUrl(provider.id)),
+      manual: api.settingsFor(printerId).get<string>(settingUrl(provider.id)),
       pageOrigin: window.location.origin,
-      printerUrl: api.printer.url,
+      printerUrl: printer.url,
     });
     if (mine !== this.#resolveToken) return;
     this.resolved = result;
@@ -198,9 +216,14 @@ export class PaAutotuneTab extends TesseraElement {
 
   // ---------------------------------------------------------------- actions
 
+  /** Settings must stay on the printer whose provider is currently shown. */
+  #settings() {
+    return this.api && this.#printerId ? this.api.settingsFor(this.#printerId) : null;
+  }
+
   #select(id: ProviderId): void {
     if (id === this.providerId) return;
-    this.api?.settings.set(SETTING_PROVIDER, id);
+    this.#settings()?.set(SETTING_PROVIDER, id);
     this.providerId = id;
     this.editing = false;
     void this.#resolve();
@@ -209,7 +232,7 @@ export class PaAutotuneTab extends TesseraElement {
   #toggleAddress(provider: Provider): void {
     this.editing = !this.editing;
     if (this.editing) {
-      this.draft = this.api?.settings.get<string>(settingUrl(provider.id)) ?? '';
+      this.draft = this.#settings()?.get<string>(settingUrl(provider.id)) ?? '';
       this.draftInvalid = false;
     }
   }
@@ -220,13 +243,13 @@ export class PaAutotuneTab extends TesseraElement {
       this.draftInvalid = true;
       return;
     }
-    this.api?.settings.set(settingUrl(provider.id), value || null);
+    this.#settings()?.set(settingUrl(provider.id), value || null);
     this.editing = false;
     void this.#resolve();
   }
 
   #resetAddress(provider: Provider): void {
-    this.api?.settings.set(settingUrl(provider.id), null);
+    this.#settings()?.set(settingUrl(provider.id), null);
     this.draft = '';
     this.editing = false;
     void this.#resolve();
@@ -236,7 +259,7 @@ export class PaAutotuneTab extends TesseraElement {
 
   override render(): TemplateResult | typeof nothing {
     if (!this.api) return nothing;
-    if (!this.api.printer.id) return html`<div class="status">${this.t('paautotune.common.noPrinter')}</div>`;
+    if (!this.#printerId) return html`<div class="status">${this.t('paautotune.common.noPrinter')}</div>`;
     if (!this.detection) return html`<div class="status">${this.t('paautotune.common.loading')}</div>`;
 
     const provider = this.providerId ? providerById(this.providerId) : undefined;
@@ -331,7 +354,7 @@ export class PaAutotuneTab extends TesseraElement {
   }
 
   #renderAddressEditor(provider: Provider): TemplateResult {
-    const hasManual = Boolean(this.api?.settings.get<string>(settingUrl(provider.id)));
+    const hasManual = Boolean(this.#settings()?.get<string>(settingUrl(provider.id)));
     return html`
       <div class="panel-body">
         <div class="row grow">

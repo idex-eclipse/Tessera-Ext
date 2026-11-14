@@ -30,21 +30,31 @@ function createFakeApi(responses: Record<string, Handler>) {
     }),
   };
   const printer = { id: 'p1', name: 'Voron', url: 'http://printer.local:7125' };
+  const secondPrinter = { id: 'p2', name: 'Other', url: 'http://other.local:7125' };
+  const noPrinter = { id: '', name: '', url: '' };
+  let activePrinter = printer;
+  const stores: Record<string, Record<string, unknown>> = { p1: store, p2: {} };
   const api = {
     pluginId: 'tessera/pa-autotune',
-    printer,
-    moonraker: () => handle,
-    moonrakerFor: () => handle,
+    get printer() { return activePrinter; },
+    printers: [printer, secondPrinter],
+    moonrakerFor: vi.fn(() => handle),
     onPrinterChange: (cb: () => void) => {
       printerListeners.push(cb);
       return unsubscribed;
     },
+    onPrintersChange: () => unsubscribed,
     onLocaleChange: () => unsubscribed,
     onThemeChange: () => unsubscribed,
     i18n: { locale: 'en', t: (key: string) => key },
-    settings: { get: (k: string) => store[k], set: (k: string, v: unknown) => (store[k] = v), onChange: () => () => {} },
+    settingsFor: vi.fn((id: string) => ({ get: (k: string) => stores[id]?.[k], set: (k: string, v: unknown) => { stores[id]![k] = v; }, onChange: () => () => {} })),
   } as unknown as PluginApi;
-  return { api, handle, store, notifyHandlers, unsubscribed };
+  // A tab stays mounted when the active printer changes; notify its host listeners.
+  const switchPrinter = (id: 'p1' | 'p2' | '') => {
+    activePrinter = id === 'p1' ? printer : id === 'p2' ? secondPrinter : noPrinter;
+    for (const listener of printerListeners) listener();
+  };
+  return { api, handle, store, stores, switchPrinter, notifyHandlers, unsubscribed };
 }
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
@@ -139,6 +149,15 @@ describe('host contract', () => {
     el.remove();
   });
 
+  it('shows an empty state without touching a printer handle when none is active', async () => {
+    fake.switchPrinter('');
+    const el = await mount();
+    expect(el.shadowRoot!.textContent).toContain('paautotune.common.noPrinter');
+    expect(fake.api.moonrakerFor).not.toHaveBeenCalled();
+    expect(fake.api.settingsFor).not.toHaveBeenCalled();
+    el.remove();
+  });
+
   it('check again finds a provider installed meanwhile', async () => {
     const el = await mount();
     helpCommands = ['KAPAT_SWEEP'];
@@ -200,6 +219,26 @@ describe('host contract', () => {
     const again = await mount();
     expect(again.shadowRoot!.querySelector('iframe')!.getAttribute('title')).toBe('KAPAT');
     again.remove();
+  });
+
+  it('keeps provider settings and Moonraker requests on the displayed printer after a switch', async () => {
+    helpCommands = ['AUTOPA_SWEEP', 'KAPAT_SWEEP'];
+    fake.stores.p2!.provider = 'kapat';
+    const el = await mount();
+    expect(el.shadowRoot!.querySelector('iframe')!.getAttribute('title')).toBe('autopa');
+
+    fake.switchPrinter('p2');
+    for (let i = 0; i < 4; i++) { await flush(); await el.updateComplete; }
+    expect(fake.api.moonrakerFor).toHaveBeenCalledWith('p2');
+    expect(el.shadowRoot!.querySelector('iframe')!.getAttribute('title')).toBe('KAPAT');
+    button(el, 'autopa').click();
+    expect(fake.stores.p2!.provider).toBe('autopa');
+    expect(fake.store.provider).toBeUndefined();
+
+    fake.switchPrinter('p1');
+    for (let i = 0; i < 4; i++) { await flush(); await el.updateComplete; }
+    expect(el.shadowRoot!.querySelector('iframe')!.getAttribute('title')).toBe('autopa');
+    el.remove();
   });
 
   it('a saved provider that was uninstalled gives way to the other one', async () => {
