@@ -136,7 +136,7 @@ export function gauge(t: T, printer: ObicoPrinter): TemplateResult {
               <text class="gauge-level" x="50" y="40">${levelLabel(t, p)}</text>
               <text class="gauge-pct" x="50" y="52">${Math.round(p * 100)}%</text>
             `
-          : svg`<g class="eye-off" transform="translate(41 25) scale(0.75)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          : svg`<g class="eye-off" transform="translate(41 28) scale(0.75)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="1" y1="1" x2="23" y2="23" />
               <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
               <path d="M6.61 6.61A13.526 13.526 0 0 0 1 12s4 8 11 8a9.74 9.74 0 0 0 5.39-1.61" />
@@ -257,6 +257,8 @@ export class ObicoSnapshot extends TesseraElement {
       gap: var(--space-sm);
       block-size: 100%;
       min-block-size: 60px;
+      /* Include padding in the available height so the placeholder remains centered. */
+      box-sizing: border-box;
       color: var(--text-muted);
       font-size: var(--font-size-sm);
       background: transparent;

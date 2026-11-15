@@ -1,6 +1,6 @@
 {
   "name": "tessera-plugin-obico",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "type": "module",
   "description": "Obico for Tessera: analyzed frame in Camera, alerts, statistics and Machine page settings",

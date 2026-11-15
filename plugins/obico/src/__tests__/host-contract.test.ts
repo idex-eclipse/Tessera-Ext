@@ -315,6 +315,12 @@ describe('host contract', () => {
     expect(liveGauge.querySelectorAll('.zone').length).toBe(3);
     expect(liveGauge.querySelector('.ball')).not.toBeNull();
     expect(liveGauge.querySelector('.eye-off')).toBeNull();
+    // A loaded frame keeps the meter directly below the snapshot.
+    expect(
+      [...el.shadowRoot!.children]
+        .filter((child) => child.matches('tessera-obico-snapshot, .gauge, label'))
+        .map((child) => child.tagName.toLowerCase()),
+    ).toEqual(['tessera-obico-snapshot', 'div', 'label']);
 
     // Not watched: grey zones, the eye-off icon and the reason instead of the ball.
     obicoPrinter.not_watching_reason = 'Printer is not actively printing';
@@ -326,6 +332,7 @@ describe('host contract', () => {
     expect(idleGauge.querySelectorAll('.zone').length).toBe(3);
     expect(idleGauge.querySelector('.ball')).toBeNull();
     expect(idleGauge.querySelector('.eye-off')).not.toBeNull();
+    expect(idleGauge.querySelector('.eye-off')?.getAttribute('transform')).toBe('translate(41 28) scale(0.75)');
     expect(idleGauge.textContent).toContain('obico.reason.notPrinting');
 
     // The header (headerElement of the widget) carries the "do not watch this print" switch.
@@ -370,6 +377,12 @@ describe('host contract', () => {
     const emptyTab = await mount('tessera-obico-camera-tab', ready.api);
     await flush(4);
     expect(deepText(emptyTab)).toContain('obico.snapshot.none');
+    // With no frame, the expanding placeholder comes first and the meter ends the tab.
+    expect(
+      [...emptyTab.shadowRoot!.children]
+        .filter((child) => child.matches('tessera-obico-snapshot, .gauge, label'))
+        .map((child) => child.tagName.toLowerCase()),
+    ).toEqual(['tessera-obico-snapshot', 'label', 'div']);
 
     resetHub();
     const failed = createFakeApi(linkedPrinter);

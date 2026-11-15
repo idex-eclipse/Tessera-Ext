@@ -41,7 +41,7 @@
       "id": "tessera/obico",
       "dir": "obico",
       "name": "Obico",
-      "version": "0.1.9",
+      "version": "0.1.10",
       "description": "Obico failure detection in Tessera: analyzed frame in Camera, failure probability, alerts and statistics; settings in a tab of the Machine page",
       "author": "Tessera",
       "pluginApi": "1.0",
@@ -53,9 +53,9 @@
         "@core/system": "4.0.0",
         "@core/widgets": "3.1.0"
       },
-      "url": "obico-0.1.9.tar.gz",
-      "sha256": "d28ed154e9ad345dbf20b45a3fa5238ee3691daa25cd4bfa38a4554d1d4e3465",
-      "size": 32071
+      "url": "obico-0.1.10.tar.gz",
+      "sha256": "9a025b906edc0fdf49b185f987579734b320d110fb32b9531eae2b5a37a0e0e3",
+      "size": 32111
     },
     {
       "id": "tessera/pa-autotune",

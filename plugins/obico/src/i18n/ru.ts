@@ -2,7 +2,7 @@
 export default {
   obico: {
     tabTitle: 'Obico',
-    camera: { analyzed: 'Проанализированный кадр' },
+    camera: { analyzed: 'Анализ' },
     loading: 'Ждём принтер…',
     reload: 'Проверить снова',
 

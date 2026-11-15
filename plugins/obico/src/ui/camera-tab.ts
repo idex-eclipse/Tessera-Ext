@@ -86,10 +86,12 @@ export class ObicoCameraTab extends HubElement {
       return html`<p class="muted">${hub.status === 'error' ? this.t('obico.api.failed') : this.t('obico.api.notFound')}</p>`;
     }
 
+    const frameUrl = printer.pic?.img_url ?? null;
+    const muteSwitch = this.muteSwitch(printer);
+    // Keep the meter directly after a frame, but put it at the card bottom while waiting for one.
     return html`
-      <tessera-obico-snapshot .api=${api} .src=${printer.pic?.img_url ?? null}></tessera-obico-snapshot>
-      ${gauge(this.t, printer)}
-      ${this.muteSwitch(printer)}
+      <tessera-obico-snapshot .api=${api} .src=${frameUrl}></tessera-obico-snapshot>
+      ${frameUrl ? html`${gauge(this.t, printer)}${muteSwitch}` : html`${muteSwitch}${gauge(this.t, printer)}`}
     `;
   }
 

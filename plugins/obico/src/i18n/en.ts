@@ -6,7 +6,7 @@
 export default {
   obico: {
     tabTitle: 'Obico',
-    camera: { analyzed: 'Analyzed frame' },
+    camera: { analyzed: 'Analyze' },
     loading: 'Waiting for the printer…',
     reload: 'Check again',
 

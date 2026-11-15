@@ -1,7 +1,7 @@
 {
   "id": "tessera/obico",
   "name": "Obico",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Obico failure detection in Tessera: analyzed frame in Camera, failure probability, alerts and statistics; settings in a tab of the Machine page",
   "author": "Tessera",
   "entry": "index.js",
