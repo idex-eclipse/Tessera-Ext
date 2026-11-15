@@ -20,7 +20,8 @@ It works on two levels:
 
 ## Requirements
 
-- Tessera with plugin API **1.0** or newer and `@core/system` **4.0.0** or newer, with the
+- Tessera with plugin API **1.0** or newer, `@core/system` **4.0.0** or newer and
+  `@core/widgets` **3.1.0** or newer, with the
   `tessera-ext` service enabled. It is on by default. A Tessera installed before API 1.0 needs
   one `tessera update` on the printer.
 - [moonraker-obico](https://www.obico.io/docs/user-guides/klipper-setup/) installed on the
@@ -51,7 +52,7 @@ only. It is never sent back to the browser: the tab only shows that a token is s
 | Where | What |
 | --- | --- |
 | *Machine* → **Obico** tab | **Moonraker:** link state, link code and link page, **Open in Obico**, **Re-link**; the `moonraker-obico` service, **Restart** and the end of its log; where the Obico tunnel leads and the `[tunnel]` lines that make it open Tessera. **API:** server and token; reaction settings of this printer (watching on or off, pause or only alert, sensitivity, retract and Z lift on pause, hotends and bed off on pause); the latest Obico events of this printer |
-| Widget **Failure detection** | the latest frame Obico analysed and Obico's semicircular gauge under it (green below 33 %, yellow up to 67 %, red above; grey with the reason when Obico does not watch); the card header has the **Do not watch this print** switch |
+| Widget **Camera** → **Analyzed frame** tab | the latest frame Obico analysed and Obico's semicircular gauge under it (green below 33 %, yellow up to 67 %, red above; grey with the reason when Obico does not watch); the tab also has the **Do not watch this print** switch. The tab appears whenever Obico is enabled and links to setup when its API is not configured. It works even without a Moonraker webcam |
 | Widget **Obico stats** | 7 days, 30 days or 12 months, for this printer or all printers of the account: prints, finished, cancelled, print hours, filament; alerts, real failures, false alarms, not answered |
 | Quick access chip **Obico** | the failure probability of the active printer in its zone colour, an eye that lights up while Obico watches and turns red while an alert waits; a click opens the tab |
 | Alert window | on every page, when a printer of this Tessera has an alert nobody answered. It sends a critical notification and shows the frame, the gauge and the file. **Not a failure**: resumes the print if Obico paused it, and can also stop watching the rest of the print. **Cancel print**: asks once more. **Later**: closes the window for now. Pause, resume and cancel go through Moonraker, so Tessera's guards see them; the verdict is recorded in Obico, which learns from it |

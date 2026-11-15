@@ -1,12 +1,12 @@
 {
   "id": "tessera/obico",
   "name": "Obico",
-  "version": "0.1.8",
-  "description": "Obico failure detection in Tessera: link the printer, watch the failure probability, answer alerts, see what the detection caught; settings in a tab of the Machine page",
+  "version": "0.1.9",
+  "description": "Obico failure detection in Tessera: analyzed frame in Camera, failure probability, alerts and statistics; settings in a tab of the Machine page",
   "author": "Tessera",
   "entry": "index.js",
   "pluginApi": "1.0",
-  "dependencies": { "@core/system": "4.0.0" },
+  "dependencies": { "@core/system": "4.0.0", "@core/widgets": "3.1.0" },
   "locales": ["en", "ru"],
 
   "services": [
@@ -21,6 +21,14 @@
       "id": "obico",
       "titleKey": "obico.tabTitle",
       "element": "tessera-obico-tab"
+    },
+    {
+      "point": "@core/widgets#camera-tabs",
+      "kind": "tab",
+      "version": 1,
+      "id": "obico-camera",
+      "titleKey": "obico.camera.analyzed",
+      "element": "tessera-obico-camera-tab"
     },
     {
       "point": "@core/system#banner-status-actions",
@@ -39,15 +47,6 @@
   ],
 
   "widgets": [
-    {
-      "type": "obico-detection",
-      "provider": "tessera/obico",
-      "titleKey": "obico.widget.detection",
-      "element": "tessera-obico-detection-widget",
-      "headerElement": "tessera-obico-detection-header",
-      "defaultSize": { "w": 4, "h": 4 },
-      "minSize": { "w": 2, "h": 2 }
-    },
     {
       "type": "obico-stats",
       "provider": "tessera/obico",

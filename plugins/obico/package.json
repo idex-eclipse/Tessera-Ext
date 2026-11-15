@@ -1,9 +1,9 @@
 {
   "name": "tessera-plugin-obico",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "private": true,
   "type": "module",
-  "description": "Obico for Tessera: link status, the moonraker-obico service and the Obico tunnel in a tab of the Machine page",
+  "description": "Obico for Tessera: analyzed frame in Camera, alerts, statistics and Machine page settings",
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch --mode dev",

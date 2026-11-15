@@ -200,9 +200,9 @@ describe('host contract', () => {
   it('registers every element and named export manifest.json refers to', async () => {
     const manifest = (await import('../../manifest.json')).default;
     const tags: string[] = [
-      ...manifest.extensions.flatMap((e) => ('element' in e && e.element ? [e.element] : [])),
+      ...manifest.extensions.flatMap((e) => ('element' in e && typeof e.element === 'string' ? [e.element] : [])),
       ...manifest.overlays.map((o) => o.element),
-      ...manifest.widgets.flatMap((w) => ('headerElement' in w && w.headerElement ? [w.element, w.headerElement] : [w.element])),
+      ...manifest.widgets.flatMap((w) => [w.element, ...('headerElement' in w && typeof w.headerElement === 'string' ? [w.headerElement] : [])]),
       ...manifest.chips.flatMap((c) => [c.element, c.pickerElement]),
       ...manifest.printerPanels.map((p) => p.element),
     ];
@@ -300,9 +300,9 @@ describe('host contract', () => {
     expect(deepText(el)).not.toContain('secret-token');
   });
 
-  it('detection widget: gauge and frame, the mute switch in the header', async () => {
+  it('camera tab: gauge, analyzed frame and print mute switch', async () => {
     const fake = createFakeApi(linkedPrinter);
-    const el = await mount('tessera-obico-detection-widget', fake.api);
+    const el = await mount('tessera-obico-camera-tab', fake.api);
     await flush(4);
     const text = deepText(el);
     expect(text).toContain('obico.level.good');
@@ -319,7 +319,7 @@ describe('host contract', () => {
     // Not watched: grey zones, the eye-off icon and the reason instead of the ball.
     obicoPrinter.not_watching_reason = 'Printer is not actively printing';
     resetHub();
-    const el2 = await mount('tessera-obico-detection-widget', fake.api);
+    const el2 = await mount('tessera-obico-camera-tab', fake.api);
     await flush(4);
     const idleGauge = el2.shadowRoot!.querySelector('.gauge')!;
     expect(idleGauge.classList.contains('idle')).toBe(true);
@@ -329,11 +329,9 @@ describe('host contract', () => {
     expect(idleGauge.textContent).toContain('obico.reason.notPrinting');
 
     // The header (headerElement of the widget) carries the "do not watch this print" switch.
-    const header = await mount('tessera-obico-detection-header', fake.api);
-    await flush(4);
-    const input = header.shadowRoot!.querySelector('input')!;
+    const input = el2.shadowRoot!.querySelector('input')!;
     expect(input.checked).toBe(false);
-    expect(deepText(header)).toContain('obico.alert.mute');
+    expect(deepText(el2)).toContain('obico.alert.mute');
     input.checked = true;
     input.dispatchEvent(new Event('change'));
     await flush();
@@ -342,7 +340,7 @@ describe('host contract', () => {
     // A muted print shows the switch on, and switching it off unmutes.
     obicoPrinter.current_print!.alert_muted_at = '2026-11-07T10:30:00Z';
     resetHub(); // the hub polls fresh: it keeps parsed copies, not the test's object
-    const header2 = await mount('tessera-obico-detection-header', fake.api);
+    const header2 = await mount('tessera-obico-camera-tab', fake.api);
     await flush(4);
     const input2 = header2.shadowRoot!.querySelector('input')!;
     expect(input2.checked).toBe(true);
@@ -354,9 +352,42 @@ describe('host contract', () => {
     // No print → the header is empty.
     obicoPrinter.current_print = null;
     resetHub();
-    const header3 = await mount('tessera-obico-detection-header', fake.api);
+    const header3 = await mount('tessera-obico-camera-tab', fake.api);
     await flush(4);
     expect(header3.shadowRoot!.querySelector('input')).toBeNull();
+  });
+
+  it('camera tab explains missing API, missing frame and server errors', async () => {
+    const unconfigured = createFakeApi(linkedPrinter, { configured: false });
+    const setupTab = await mount('tessera-obico-camera-tab', unconfigured.api);
+    await flush(4);
+    expect(deepText(setupTab)).toContain('obico.api.notSetUp');
+    expect(setupTab.shadowRoot!.querySelector('a')?.getAttribute('href')).toContain('obico');
+
+    resetHub();
+    obicoPrinter.pic = null;
+    const ready = createFakeApi(linkedPrinter);
+    const emptyTab = await mount('tessera-obico-camera-tab', ready.api);
+    await flush(4);
+    expect(deepText(emptyTab)).toContain('obico.snapshot.none');
+
+    resetHub();
+    const failed = createFakeApi(linkedPrinter);
+    failed.services.fetch.mockRejectedValue(new Error('offline'));
+    const errorTab = await mount('tessera-obico-camera-tab', failed.api);
+    await flush(4);
+    expect(deepText(errorTab)).toContain('obico.api.failed');
+  });
+
+  it('releases the analyzed frame object URL when its tab is unmounted', async () => {
+    const revoke = vi.spyOn(URL, 'revokeObjectURL');
+    const fake = createFakeApi(linkedPrinter);
+    const tab = await mount('tessera-obico-camera-tab', fake.api);
+    await flush(4);
+    const snapshot = tab.shadowRoot!.querySelector('tessera-obico-snapshot')!;
+    expect(snapshot.shadowRoot!.querySelector('img')).not.toBeNull();
+    tab.remove();
+    expect(revoke).toHaveBeenCalledWith('blob:frame');
   });
 
   it('stats widget: totals and how the alerts were answered', async () => {

@@ -6,6 +6,7 @@
 export default {
   obico: {
     tabTitle: 'Obico',
+    camera: { analyzed: 'Analyzed frame' },
     loading: 'Waiting for the printer…',
     reload: 'Check again',
 
@@ -140,7 +141,6 @@ export default {
     },
 
     widget: {
-      detection: 'Failure detection',
       stats: 'Obico stats',
       graph: 'Failure probability during this print',
     },

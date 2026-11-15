@@ -2,6 +2,7 @@
 export default {
   obico: {
     tabTitle: 'Obico',
+    camera: { analyzed: 'Проанализированный кадр' },
     loading: 'Ждём принтер…',
     reload: 'Проверить снова',
 
@@ -136,7 +137,6 @@ export default {
     },
 
     widget: {
-      detection: 'Обнаружение сбоев',
       stats: 'Статистика Obico',
       graph: 'Вероятность сбоя за эту печать',
     },
