@@ -2,6 +2,24 @@
   "schema": 1,
   "plugins": [
     {
+      "id": "tessera/macro-builder",
+      "dir": "macro-builder",
+      "name": "Macro Builder",
+      "version": "0.1.4",
+      "description": "Visual editor for Klipper macros inside Config",
+      "author": "Tessera",
+      "pluginApi": "1.0",
+      "requires": [
+        "@core/config"
+      ],
+      "dependencies": {
+        "@core/config": "4.1.0"
+      },
+      "url": "macro-builder-0.1.4.tar.gz",
+      "sha256": "e5d2c769eedb0335120ad2df227b496b6bc07b96b04aba22b5e80159d8b33016",
+      "size": 290000
+    },
+    {
       "id": "tessera/maintenance",
       "dir": "maintenance",
       "name": "Maintenance",
