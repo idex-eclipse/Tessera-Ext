@@ -1,0 +1,25 @@
+{
+  "id": "tessera/macro-builder",
+  "name": "Macro Builder",
+  "version": "0.1.4",
+  "description": "Visual editor for Klipper macros inside Config",
+  "author": "Tessera",
+  "entry": "index.js",
+  "pluginApi": "1.0",
+  "dependencies": { "@core/config": "4.1.0" },
+  "locales": ["en", "ru"],
+  "extensions": [
+    {
+      "point": "@core/config#macro-builder",
+      "kind": "action",
+      "version": 1,
+      "id": "builder",
+      "titleKey": "macroBuilder.title",
+      "handler": "openMacroBuilder",
+      "icon": "kind-macro"
+    }
+  ],
+  "overlays": [
+    { "id": "builder-dialog", "element": "tessera-macro-builder-dialog" }
+  ]
+}
