@@ -14,6 +14,7 @@ archive, checks the hash and unpacks it into `~/tessera/extensions/`.
 
 | Plugin | Version | What it does | Needs |
 |---|---|---|---|
+| [**Macro Builder**](plugins/macro-builder/README.md) (`tessera/macro-builder`) | 0.1.4 | visual Blockly editor for macros inside Config, with lossless handling of untouched Jinja and Config-managed Save/undo | Tessera with `@core/config` 4.1.0 and plugin API 1.0 |
 | [**Spoolman**](plugins/spoolman/README.md) (`tessera/spoolman`) | 0.1.1 | spool per tool on the dashboard, Spoolman page, pre-print check of material and remaining filament | Moonraker `[spoolman]`; for several extruders Klipper `[save_variables]` and `T0…Tn` macros; Tessera with plugin API 1.0 |
 | [**Shake&Tune**](plugins/shaketune/README.md) (`tessera/shaketune`) | 0.1.4 | Klippain Shake&Tune in the Input Shaper tab of Calibrations: tests with their parameters, recommended shapers with Apply, belts, vibrations, axes map, graphs | Klipper `[shaketune]` (Shake&Tune v4+), `[resonance_tester]` and an accelerometer; Tessera with plugin API 1.0 |
 | [**Pressure Advance tester**](plugins/pa-tester/README.md) (`tessera/pa-tester`) | 0.3.4 | Klipper `pa_tester` in a Pressure Advance tab of Calibrations: `TEST_PRESSURE_ADVANCE` / `PA_CALIBRATE` with their parameters, result, live load cell graph | Klipper `[pa_tester]` (generic-cartesian branch of the dmbutyugin fork), NumPy and a load cell; Tessera with plugin API 1.0 |
