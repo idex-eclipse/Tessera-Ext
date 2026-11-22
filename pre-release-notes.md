@@ -2,6 +2,8 @@
 
 ## English
 
+- **Maintenance 0.1.2 in Fleet Health** — the printer card popover shows soon and overdue maintenance, up to three tasks, and a link to that printer's Maintenance tab. Soon work leaves the indicator unchanged; overdue work turns it amber. Update Tessera first, then update the plugin through the registry and reload the UI.
+
 - **Macro Builder 0.1.4** — `C`, `M`, `Alt+C`, and `L` insert command, macro call, condition, and loop blocks after the last edit. The next block enters a newly added condition or loop. Shortcuts work with Russian keyboard layouts and leave text fields alone. Update the plugin through the registry and reload the UI.
 
 - **Macro Builder 0.1.3** — new comment blocks begin with `#`; variable command blocks use short toolbox previews and expand to editable templates on the canvas. Command fields open with a caret instead of full selection, and Config suggestions appear as soon as the caret reaches a value after `=`. Update the plugin through the registry and reload the UI.
@@ -15,6 +17,8 @@
 - **Macro Builder 0.1.0** — optional visual editor for Config 4.1.0. Builds and edits Klipper macros with expanding fields, multiline Jinja blocks, local `variable_*` options, and `SET_GCODE_VARIABLE`/`SAVE_VARIABLE` blocks. Config supplies contextual completion. Untouched Jinja and whitespace stay exact; Apply uses Config's undoable unsaved buffer. Install after updating Tessera, then reload the UI.
 
 ## Русский
+
+- **Maintenance 0.1.2 в «Состоянии машины»** — popover Fleet-карточки показывает скорое и просроченное обслуживание, до трёх задач и ссылку на вкладку «Обслуживание» этого принтера. Скорые работы не меняют индикатор, просроченные делают его янтарным. Сначала обновите Tessera, затем плагин через реестр и перезагрузите UI.
 
 - **Macro Builder 0.1.4** — `C`, `M`, `Alt+C` и `L` вставляют команду, вызов макроса, условие и цикл после последней правки. Следующий блок попадает внутрь нового условия или цикла. Клавиши работают при русской раскладке и не мешают вводу текста. Обновите плагин через реестр и перезагрузите UI.
 

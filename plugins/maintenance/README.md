@@ -6,12 +6,13 @@ Optional Tessera plugin that reminds you to service the printer. Intervals count
 hours, prints, calendar days and kilometres of filament**; every task can be switched off,
 reminders start a little before the deadline, and before a print starts Tessera shows the bed
 cameras and anything that is overdue. It adds a **Maintenance** tab to the core *Machine* page
-through the extension point `@core/system#tabs`, a dashboard widget, a notification monitor and
-a guard on the start of a print. Written in [Lit](https://lit.dev).
+through the extension point `@core/system#tabs`, contributes reminders to Fleet Health, and adds
+a dashboard widget, a notification monitor and a guard on the start of a print. Written in
+[Lit](https://lit.dev).
 
 ## Requirements
 
-- Tessera with plugin API **1.0** or newer and `@core/system` **4.0.0** or newer.
+- Tessera with plugin API **1.0** or newer and `@core/system` **5.3.0** or newer.
   `tessera-ext` refuses to install on an older Tessera.
 - Moonraker with its job history (it is on by default): the counters come from
   `server.history.totals`.
@@ -44,6 +45,10 @@ a guard on the start of a print. Written in [Lit](https://lit.dev).
 5. **Notifications.** *Soon* (the lead time of the task) and *due* each arrive once per cycle
    through Tessera's notification centre, and an overdue task is repeated after a finished print
    at most once a day.
+6. **Fleet Health.** A printer's Fleet Health popover shows the soon and overdue counters and up
+   to three tasks, with a link to that printer's Maintenance tab. Soon tasks do not change the
+   indicator colour; overdue tasks make it amber. Nothing is shown until setup is complete or
+   while there are no reminders.
 
 ### Default tasks
 

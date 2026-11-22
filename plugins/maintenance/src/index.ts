@@ -20,6 +20,7 @@ import { MaintCard } from './ui/card';
 import { MaintCameras } from './ui/cameras';
 import { MaintChains } from './ui/chains';
 import { MaintEditor } from './ui/editor';
+import { MaintenanceFleetHealth } from './ui/fleet-health';
 import { MaintenanceOverlay } from './ui/overlay';
 import { MaintenanceTab } from './ui/tab';
 import { MaintenanceWidget } from './ui/widget';
@@ -28,6 +29,7 @@ import { MaintWizard } from './ui/wizard';
 // Tags must match manifest.json exactly. They are global for the whole page, hence the prefix.
 defineElement('tessera-maintenance-tab', MaintenanceTab);
 defineElement('tessera-maintenance-widget', MaintenanceWidget);
+defineElement('tessera-maintenance-fleet-health', MaintenanceFleetHealth);
 defineElement('tessera-maint-card', MaintCard);
 defineElement('tessera-maint-editor', MaintEditor);
 defineElement('tessera-maint-wizard', MaintWizard);

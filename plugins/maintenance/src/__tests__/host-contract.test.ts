@@ -113,14 +113,19 @@ function mount(tag: string): El {
 describe('host contract', () => {
   it('registers the elements, the point, the widget and the dictionaries manifest.json names', async () => {
     const manifest = (await import('../../manifest.json')).default;
-    expect(manifest.extensions).toHaveLength(1);
-    const e = manifest.extensions[0]!;
+    expect(manifest.extensions).toHaveLength(2);
+    const e = manifest.extensions.find((item) => item.point === '@core/system#tabs')!;
+    const fleet = manifest.extensions.find((item) => item.point === '@core/system#fleet-health-sections')!;
     expect(customElements.get(e.element)).toBeDefined();
+    expect(customElements.get(fleet.element)).toBeDefined();
     expect(e).toMatchObject({ point: '@core/system#tabs', kind: 'tab', version: 1 });
-    expect(manifest.dependencies).toEqual({ '@core/system': '4.0.0' });
+    expect(fleet).toMatchObject({ kind: 'element', version: 1, id: 'fleet-health' });
+    expect(manifest.dependencies).toEqual({ '@core/system': '5.3.0' });
+    expect(manifest.version).toBe('0.1.2');
     expect(manifest.pluginApi).toBe('1.0');
     expect(Object.keys(mod.locales)).toEqual(manifest.locales);
     expect(strings[e.titleKey]).toBeTruthy();
+    expect(strings[fleet.titleKey]).toBeTruthy();
     expect(manifest.overlays).toHaveLength(1);
     expect(customElements.get(manifest.overlays[0]!.element)).toBeDefined();
     const guard = manifest.guards[0]!;

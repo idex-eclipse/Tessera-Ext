@@ -7,6 +7,7 @@ export default {
     widgetTitle: 'Обслуживание',
     loading: 'Ждём принтер…',
     open: 'Открыть обслуживание',
+    fleet: { title: 'Обслуживание', open: 'Открыть обслуживание' },
 
     common: {
       save: 'Сохранить',

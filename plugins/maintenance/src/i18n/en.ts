@@ -9,6 +9,7 @@ export default {
     widgetTitle: 'Maintenance',
     loading: 'Waiting for the printer…',
     open: 'Open maintenance',
+    fleet: { title: 'Maintenance', open: 'Open maintenance' },
 
     common: {
       save: 'Save',
