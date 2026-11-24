@@ -17,7 +17,26 @@
       },
       "url": "macro-builder-0.1.4.tar.gz",
       "sha256": "e5d2c769eedb0335120ad2df227b496b6bc07b96b04aba22b5e80159d8b33016",
-      "size": 290000
+      "size": 290000,
+      "versions": [
+        {
+          "dir": "macro-builder",
+          "name": "Macro Builder",
+          "version": "0.1.4",
+          "description": "Visual editor for Klipper macros inside Config",
+          "author": "Tessera",
+          "pluginApi": "1.0",
+          "requires": [
+            "@core/config"
+          ],
+          "dependencies": {
+            "@core/config": "4.1.0"
+          },
+          "url": "macro-builder-0.1.4.tar.gz",
+          "sha256": "e5d2c769eedb0335120ad2df227b496b6bc07b96b04aba22b5e80159d8b33016",
+          "size": 290000
+        }
+      ]
     },
     {
       "id": "tessera/maintenance",
@@ -35,7 +54,60 @@
       },
       "url": "maintenance-0.1.2.tar.gz",
       "sha256": "441172a070dfcb1cf92db5ccf5c44e63c79b07197f59e2cb4dbc1a3858f1a768",
-      "size": 41783
+      "size": 41783,
+      "versions": [
+        {
+          "dir": "maintenance",
+          "name": "Maintenance",
+          "version": "0.1.2",
+          "description": "Printer maintenance reminders in a tab of the Machine page: intervals by print hours, prints, days and filament, follow-up chains and a pre-print check",
+          "author": "Tessera",
+          "pluginApi": "1.0",
+          "requires": [
+            "@core/system"
+          ],
+          "dependencies": {
+            "@core/system": "5.3.0"
+          },
+          "url": "maintenance-0.1.2.tar.gz",
+          "sha256": "441172a070dfcb1cf92db5ccf5c44e63c79b07197f59e2cb4dbc1a3858f1a768",
+          "size": 41783
+        },
+        {
+          "dir": "maintenance",
+          "name": "Maintenance",
+          "version": "0.1.1",
+          "description": "Printer maintenance reminders in a tab of the Machine page: intervals by print hours, prints, days and filament, follow-up chains and a pre-print check",
+          "author": "Tessera",
+          "pluginApi": "1.0",
+          "requires": [
+            "@core/system"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0"
+          },
+          "url": "maintenance-0.1.1.tar.gz",
+          "sha256": "f48c277b6b6e0f43c3b5c576e85caabd9d40db82ccf019d509c6a5cda6522436",
+          "size": 40826
+        },
+        {
+          "dir": "maintenance",
+          "name": "Maintenance",
+          "version": "0.1.0",
+          "description": "Printer maintenance reminders in a tab of the Machine page: intervals by print hours, prints, days and filament, follow-up chains and a pre-print check",
+          "author": "Tessera",
+          "pluginApi": "0.12",
+          "requires": [
+            "@core/system"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0"
+          },
+          "url": "maintenance-0.1.0.tar.gz",
+          "sha256": "a734802ffad77c4a74b83e1cfecf6e9ca23d30dd7e3e1e5e114c3560e993f3a0",
+          "size": 40825
+        }
+      ]
     },
     {
       "id": "tessera/motion-diag",
@@ -53,7 +125,43 @@
       },
       "url": "motion-diag-0.1.1.tar.gz",
       "sha256": "f8d9acb874bc551c5b4181e85d5764c52f920017a29f611f3c2bc979e01ac792",
-      "size": 74507
+      "size": 74507,
+      "versions": [
+        {
+          "dir": "motion-diag",
+          "name": "Motion diagnostics",
+          "version": "0.1.1",
+          "description": "Klipper motan in the browser: record motion, accelerometer, load cell and stallguard data, analyse it and look at the graphs, in a tab of the Machine page",
+          "author": "Tessera",
+          "pluginApi": "1.0",
+          "requires": [
+            "@core/system"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0"
+          },
+          "url": "motion-diag-0.1.1.tar.gz",
+          "sha256": "f8d9acb874bc551c5b4181e85d5764c52f920017a29f611f3c2bc979e01ac792",
+          "size": 74507
+        },
+        {
+          "dir": "motion-diag",
+          "name": "Motion diagnostics",
+          "version": "0.1.0",
+          "description": "Klipper motan in the browser: record motion, accelerometer, load cell and stallguard data, analyse it and look at the graphs, in a tab of the Machine page",
+          "author": "Tessera",
+          "pluginApi": "0.12",
+          "requires": [
+            "@core/system"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0"
+          },
+          "url": "motion-diag-0.1.0.tar.gz",
+          "sha256": "f3cdb0cee74de6803c263e3cd8e1469a4d0627b3d131cc914d416e984d19c3e5",
+          "size": 74387
+        }
+      ]
     },
     {
       "id": "tessera/obico",
@@ -73,7 +181,200 @@
       },
       "url": "obico-0.1.10.tar.gz",
       "sha256": "9a025b906edc0fdf49b185f987579734b320d110fb32b9531eae2b5a37a0e0e3",
-      "size": 32111
+      "size": 32111,
+      "versions": [
+        {
+          "dir": "obico",
+          "name": "Obico",
+          "version": "0.1.10",
+          "description": "Obico failure detection in Tessera: analyzed frame in Camera, failure probability, alerts and statistics; settings in a tab of the Machine page",
+          "author": "Tessera",
+          "pluginApi": "1.0",
+          "requires": [
+            "@core/system",
+            "@core/widgets"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0",
+            "@core/widgets": "3.1.0"
+          },
+          "url": "obico-0.1.10.tar.gz",
+          "sha256": "9a025b906edc0fdf49b185f987579734b320d110fb32b9531eae2b5a37a0e0e3",
+          "size": 32111
+        },
+        {
+          "dir": "obico",
+          "name": "Obico",
+          "version": "0.1.9",
+          "description": "Obico failure detection in Tessera: analyzed frame in Camera, failure probability, alerts and statistics; settings in a tab of the Machine page",
+          "author": "Tessera",
+          "pluginApi": "1.0",
+          "requires": [
+            "@core/system",
+            "@core/widgets"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0",
+            "@core/widgets": "3.1.0"
+          },
+          "url": "obico-0.1.9.tar.gz",
+          "sha256": "d28ed154e9ad345dbf20b45a3fa5238ee3691daa25cd4bfa38a4554d1d4e3465",
+          "size": 32071
+        },
+        {
+          "dir": "obico",
+          "name": "Obico",
+          "version": "0.1.8",
+          "description": "Obico failure detection in Tessera: link the printer, watch the failure probability, answer alerts, see what the detection caught; settings in a tab of the Machine page",
+          "author": "Tessera",
+          "pluginApi": "1.0",
+          "requires": [
+            "@core/system"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0"
+          },
+          "url": "obico-0.1.8.tar.gz",
+          "sha256": "1602a560eb07852873cf33711b0593a54679598181f25f5e41d44e66e20b0736",
+          "size": 32079
+        },
+        {
+          "dir": "obico",
+          "name": "Obico",
+          "version": "0.1.7",
+          "description": "Obico failure detection in Tessera: link the printer, watch the failure probability, answer alerts, see what the detection caught; settings in a tab of the Machine page",
+          "author": "Tessera",
+          "pluginApi": "0.13",
+          "requires": [
+            "@core/system"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0"
+          },
+          "url": "obico-0.1.7.tar.gz",
+          "sha256": "3f576ffe2faf5cd1a68aacac556c2d4abf78a71a39b2fed63b9dc67cf0e7de38",
+          "size": 31998
+        },
+        {
+          "dir": "obico",
+          "name": "Obico",
+          "version": "0.1.6",
+          "description": "Obico failure detection in Tessera: link the printer, watch the failure probability, answer alerts, see what the detection caught; settings in a tab of the Machine page",
+          "author": "Tessera",
+          "pluginApi": "0.13",
+          "requires": [
+            "@core/system"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0"
+          },
+          "url": "obico-0.1.6.tar.gz",
+          "sha256": "37bee3a04d35beebb84f2956cf56fa66f205911283add1d784fb637b09e8634e",
+          "size": 31997
+        },
+        {
+          "dir": "obico",
+          "name": "Obico",
+          "version": "0.1.5",
+          "description": "Obico failure detection in Tessera: link the printer, watch the failure probability, answer alerts, see what the detection caught; settings in a tab of the Machine page",
+          "author": "Tessera",
+          "pluginApi": "0.13",
+          "requires": [
+            "@core/system"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0"
+          },
+          "url": "obico-0.1.5.tar.gz",
+          "sha256": "44bbe0770d6855019e152af7a5a370d84c33e1894c08669a442f65b32ab9a358",
+          "size": 31995
+        },
+        {
+          "dir": "obico",
+          "name": "Obico",
+          "version": "0.1.4",
+          "description": "Obico failure detection in Tessera: link the printer, watch the failure probability, answer alerts, see what the detection caught; settings in a tab of the Machine page",
+          "author": "Tessera",
+          "pluginApi": "0.13",
+          "requires": [
+            "@core/system"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0"
+          },
+          "url": "obico-0.1.4.tar.gz",
+          "sha256": "de71e67e2d9a667de4e09ea53e8a4db982c6f1bd04adb0e94a401d6a000d44ea",
+          "size": 31958
+        },
+        {
+          "dir": "obico",
+          "name": "Obico",
+          "version": "0.1.3",
+          "description": "Obico failure detection in Tessera: link the printer, watch the failure probability, answer alerts, see what the detection caught; settings in a tab of the Machine page",
+          "author": "Tessera",
+          "pluginApi": "0.13",
+          "requires": [
+            "@core/system"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0"
+          },
+          "url": "obico-0.1.3.tar.gz",
+          "sha256": "f13011a892e00675aa055e9128872e38821747be8b3dca7d94f4c94a154b598e",
+          "size": 31946
+        },
+        {
+          "dir": "obico",
+          "name": "Obico",
+          "version": "0.1.2",
+          "description": "Obico failure detection in Tessera: link the printer, watch the failure probability, answer alerts, see what the detection caught; settings in a tab of the Machine page",
+          "author": "Tessera",
+          "pluginApi": "0.13",
+          "requires": [
+            "@core/system"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0"
+          },
+          "url": "obico-0.1.2.tar.gz",
+          "sha256": "e32ab7dbb2c6e3d0b731ee7022999ec80b750e49eb6441db3bab2f6a9de94c04",
+          "size": 31799
+        },
+        {
+          "dir": "obico",
+          "name": "Obico",
+          "version": "0.1.1",
+          "description": "Obico failure detection in Tessera: link the printer, watch the failure probability, answer alerts, see what the detection caught; settings in a tab of the Machine page",
+          "author": "Tessera",
+          "pluginApi": "0.13",
+          "requires": [
+            "@core/system"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0"
+          },
+          "url": "obico-0.1.1.tar.gz",
+          "sha256": "f1e1ff01f8990fd4a3179a22d848286f3c84229fdf35af27ab66f48d7146a039",
+          "size": 31572
+        },
+        {
+          "dir": "obico",
+          "name": "Obico",
+          "version": "0.1.0",
+          "description": "Obico failure detection in Tessera: link the printer, watch the failure probability, answer alerts, see what the detection caught; settings in a tab of the Machine page",
+          "author": "Tessera",
+          "pluginApi": "0.13",
+          "requires": [
+            "@core/system"
+          ],
+          "dependencies": {
+            "@core/system": "4.0.0"
+          },
+          "url": "obico-0.1.0.tar.gz",
+          "sha256": "867bc6952bcbfc06de3a6886249e1c88d93924e6a1e1d1614643d193b5abbfde",
+          "size": 29649
+        }
+      ]
     },
     {
       "id": "tessera/pa-autotune",
@@ -91,7 +392,43 @@
       },
       "url": "pa-autotune-0.1.1.tar.gz",
       "sha256": "2c73ad18d371b73665629242724f4206314d9452ca97eb6d74b70f5e8ca18bc5",
-      "size": 15679
+      "size": 15679,
+      "versions": [
+        {
+          "dir": "pa-autotune",
+          "name": "PA Autotune",
+          "version": "0.1.1",
+          "description": "autopa and KAPAT (load cell Pressure Advance auto-calibration) in a PA Autotune tab of Calibrations: picks the installed provider and embeds its web UI",
+          "author": "Tessera",
+          "pluginApi": "1.0",
+          "requires": [
+            "@core/calibrations"
+          ],
+          "dependencies": {
+            "@core/calibrations": "3.0.0"
+          },
+          "url": "pa-autotune-0.1.1.tar.gz",
+          "sha256": "2c73ad18d371b73665629242724f4206314d9452ca97eb6d74b70f5e8ca18bc5",
+          "size": 15679
+        },
+        {
+          "dir": "pa-autotune",
+          "name": "PA Autotune",
+          "version": "0.1.0",
+          "description": "autopa and KAPAT (load cell Pressure Advance auto-calibration) in a PA Autotune tab of Calibrations: picks the installed provider and embeds its web UI",
+          "author": "Tessera",
+          "pluginApi": "0.8",
+          "requires": [
+            "@core/calibrations"
+          ],
+          "dependencies": {
+            "@core/calibrations": "3.0.0"
+          },
+          "url": "pa-autotune-0.1.0.tar.gz",
+          "sha256": "262b7ff05a0859a75d3184e1817c9df97544fca01bf7a2f9165d3c7998ef18db",
+          "size": 15522
+        }
+      ]
     },
     {
       "id": "tessera/pa-tester",
@@ -109,7 +446,128 @@
       },
       "url": "pa-tester-0.3.4.tar.gz",
       "sha256": "189fc0b5cc831cf6332b423ea88f2d0f675656733347714cd3ca3c305dc2765b",
-      "size": 58666
+      "size": 58666,
+      "versions": [
+        {
+          "dir": "pa-tester",
+          "name": "Pressure Advance tester",
+          "version": "0.3.4",
+          "description": "Klipper pa_tester in a Pressure Advance tab of Calibrations: run the measurement, read the result, watch the load cell live",
+          "author": "Tessera",
+          "pluginApi": "1.0",
+          "requires": [
+            "@core/calibrations"
+          ],
+          "dependencies": {
+            "@core/calibrations": "3.0.0"
+          },
+          "url": "pa-tester-0.3.4.tar.gz",
+          "sha256": "189fc0b5cc831cf6332b423ea88f2d0f675656733347714cd3ca3c305dc2765b",
+          "size": 58666
+        },
+        {
+          "dir": "pa-tester",
+          "name": "Pressure Advance tester",
+          "version": "0.3.3",
+          "description": "Klipper pa_tester in a Pressure Advance tab of Calibrations: run the measurement, read the result, watch the load cell live",
+          "author": "Tessera",
+          "pluginApi": "0.9",
+          "requires": [
+            "@core/calibrations"
+          ],
+          "dependencies": {
+            "@core/calibrations": "3.0.0"
+          },
+          "url": "pa-tester-0.3.3.tar.gz",
+          "sha256": "9246d0e177ea305bbf51821e3a15b5bd0d70cce9f7f56a69265e0f33ab5b2120",
+          "size": 58637
+        },
+        {
+          "dir": "pa-tester",
+          "name": "Pressure Advance tester",
+          "version": "0.3.2",
+          "description": "Klipper pa_tester in a Pressure Advance tab of Calibrations: run the measurement, read the result, watch the load cell live",
+          "author": "Tessera",
+          "pluginApi": "0.9",
+          "requires": [
+            "@core/calibrations"
+          ],
+          "dependencies": {
+            "@core/calibrations": "3.0.0"
+          },
+          "url": "pa-tester-0.3.2.tar.gz",
+          "sha256": "52630fd614e096d30417bf89034f898a2323a95105eef0d8fe7fbf9d89d445a2",
+          "size": 58387
+        },
+        {
+          "dir": "pa-tester",
+          "name": "Pressure Advance tester",
+          "version": "0.3.1",
+          "description": "Klipper pa_tester in a Pressure Advance tab of Calibrations: run the measurement, read the result, watch the load cell live",
+          "author": "Tessera",
+          "pluginApi": "0.9",
+          "requires": [
+            "@core/calibrations"
+          ],
+          "dependencies": {
+            "@core/calibrations": "3.0.0"
+          },
+          "url": "pa-tester-0.3.1.tar.gz",
+          "sha256": "cfedbdb570e78d079d1bab72b444bdcce2d9290689a10bb5409c0d73b2a687b4",
+          "size": 58068
+        },
+        {
+          "dir": "pa-tester",
+          "name": "Pressure Advance tester",
+          "version": "0.3.0",
+          "description": "Klipper pa_tester in a Pressure Advance tab of Calibrations: run the measurement, read the result, watch the load cell live",
+          "author": "Tessera",
+          "pluginApi": "0.9",
+          "requires": [
+            "@core/calibrations"
+          ],
+          "dependencies": {
+            "@core/calibrations": "3.0.0"
+          },
+          "url": "pa-tester-0.3.0.tar.gz",
+          "sha256": "04bd7da09f188022aeeed11848a8d5cc15a249b790d4c28b0b28bfd35339f65f",
+          "size": 58068
+        },
+        {
+          "dir": "pa-tester",
+          "name": "Pressure Advance tester",
+          "version": "0.2.0",
+          "description": "Klipper pa_tester in a Pressure Advance tab of Calibrations: run the measurement, read the result, watch the load cell live",
+          "author": "Tessera",
+          "pluginApi": "0.9",
+          "requires": [
+            "@core/calibrations"
+          ],
+          "dependencies": {
+            "@core/calibrations": "3.0.0"
+          },
+          "url": "pa-tester-0.2.0.tar.gz",
+          "sha256": "909c127c667dc34915387198cbace9e58aa3a68c5712bdc22ed054d4d8227474",
+          "size": 54928
+        },
+        {
+          "dir": "pa-tester",
+          "name": "Pressure Advance tester",
+          "version": "0.1.0",
+          "description": "Klipper pa_tester in a Pressure Advance tab of Calibrations: run the measurement, read the result, watch the load cell live",
+          "author": "Tessera",
+          "pluginApi": "0.9",
+          "requires": [
+            "@core/calibrations"
+          ],
+          "dependencies": {
+            "@core/calibrations": "3.0.0"
+          },
+          "url": "pa-tester-0.1.0.tar.gz",
+          "sha256": "44f1cf00e6b6d1d79a5ced2d4f64fe261cd95d1879830856ba4727ef1e4ce459",
+          "size": 53737
+        }
+      ]
     },
     {
       "id": "tessera/shaketune",
@@ -127,7 +585,85 @@
       },
       "url": "shaketune-0.1.4.tar.gz",
       "sha256": "1d5e2907d505120d9015dc72b8856f265c693ef82692268b65b49c66de0333c9",
-      "size": 25538
+      "size": 25538,
+      "versions": [
+        {
+          "dir": "shaketune",
+          "name": "Shake&Tune",
+          "version": "0.1.4",
+          "description": "Klippain Shake&Tune in the Input Shaper tab of Calibrations: run its commands, read the recommendations, browse the graphs",
+          "author": "Tessera",
+          "pluginApi": "1.0",
+          "requires": [
+            "@core/calibrations"
+          ],
+          "dependencies": {
+            "@core/calibrations": "3.0.0"
+          },
+          "url": "shaketune-0.1.4.tar.gz",
+          "sha256": "1d5e2907d505120d9015dc72b8856f265c693ef82692268b65b49c66de0333c9",
+          "size": 25538
+        },
+        {
+          "dir": "shaketune",
+          "name": "Shake&Tune",
+          "version": "0.1.3",
+          "description": "Klippain Shake&Tune in the Input Shaper tab of Calibrations: run its commands, read the recommendations, browse the graphs",
+          "author": "Tessera",
+          "pluginApi": "0.8",
+          "requires": [
+            "@core/calibrations"
+          ],
+          "dependencies": {
+            "@core/calibrations": "3.0.0"
+          },
+          "url": "shaketune-0.1.3.tar.gz",
+          "sha256": "57b2614829721488a0112472bfe52087b732aee2c854c778d8b5d695137cabe3",
+          "size": 25490
+        },
+        {
+          "dir": "shaketune",
+          "name": "Shake&Tune",
+          "version": "0.1.2",
+          "description": "Klippain Shake&Tune in the Input Shaper tab of Calibrations: run its commands, read the recommendations, browse the graphs",
+          "author": "Tessera",
+          "pluginApi": "0.8",
+          "url": "shaketune-0.1.2.tar.gz",
+          "sha256": "ed3a3c15cfe4218d1c811d595f85c54727b4e73c4bc50284000f6efab1da352a",
+          "size": 25468,
+          "requires": [
+            "@core/calibrations"
+          ]
+        },
+        {
+          "dir": "shaketune",
+          "name": "Shake&Tune",
+          "version": "0.1.1",
+          "description": "Klippain Shake&Tune in the Input Shaper tab of Calibrations: run its commands, read the recommendations, browse the graphs",
+          "author": "Tessera",
+          "pluginApi": 1,
+          "url": "shaketune-0.1.1.tar.gz",
+          "sha256": "c8ea40f12c1119069717c1f5582c4663dc7f830eca84c6b1bb38897ac85c447d",
+          "size": 25455,
+          "requires": [
+            "@core/calibrations"
+          ]
+        },
+        {
+          "dir": "shaketune",
+          "name": "Shake&Tune",
+          "version": "0.1.0",
+          "description": "Klippain Shake&Tune in the Input Shaper tab of Calibrations: run its commands, read the recommendations, browse the graphs",
+          "author": "Tessera",
+          "pluginApi": 1,
+          "url": "shaketune-0.1.0.tar.gz",
+          "sha256": "83e4e429ccb496026b2e120bd37137525df57f58b66d52ccf192f8e21947bacc",
+          "size": 24411,
+          "requires": [
+            "@core/calibrations"
+          ]
+        }
+      ]
     },
     {
       "id": "tessera/spoolman",
@@ -139,7 +675,31 @@
       "pluginApi": "1.0",
       "url": "spoolman-0.1.1.tar.gz",
       "sha256": "192d26d295ebe072885396edfcc0efab7b05410c63f6f6073dfe34cc5afcf38f",
-      "size": 20772
+      "size": 20772,
+      "versions": [
+        {
+          "dir": "spoolman",
+          "name": "Spoolman",
+          "version": "0.1.1",
+          "description": "Spoolman integration: spools per tool, pre-print filament check",
+          "author": "Tessera",
+          "pluginApi": "1.0",
+          "url": "spoolman-0.1.1.tar.gz",
+          "sha256": "192d26d295ebe072885396edfcc0efab7b05410c63f6f6073dfe34cc5afcf38f",
+          "size": 20772
+        },
+        {
+          "dir": "spoolman",
+          "name": "Spoolman",
+          "version": "0.1.0",
+          "description": "Spoolman integration: spools per tool, pre-print filament check",
+          "author": "Tessera",
+          "pluginApi": 1,
+          "url": "spoolman-0.1.0.tar.gz",
+          "sha256": "1e2f2dc908484e9bc7aceb1be1111f5168eeb90456b8b96683ef09b1642c36d1",
+          "size": 20753
+        }
+      ]
     }
   ]
 }

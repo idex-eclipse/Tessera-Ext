@@ -1,4 +1,4 @@
-// Checks that registry/ is what printers can install and what the sources build into.
+// Checks every published registry archive and rebuilds only current sources.
 //
 // Usage (from the repository root):
 //   node scripts/verify-registry.mjs            registry.json against the archives
@@ -20,6 +20,7 @@ import { gunzipSync } from 'node:zlib';
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const registryDir = join(repo, 'registry');
 const rebuild = process.argv.includes('--rebuild');
+const against = process.argv.includes('--against') ? process.argv[process.argv.indexOf('--against') + 1] : null;
 
 const DIR_NAME_RE = /^[a-z0-9][a-z0-9._-]{0,63}$/i;
 const SHA256_RE = /^[0-9a-f]{64}$/;
@@ -43,6 +44,43 @@ function warn(message) {
 }
 
 const sha256 = (data) => createHash('sha256').update(data).digest('hex');
+const SEMVER_RE = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z.-]+)?$/;
+
+/** Registry order is semver order, not lexicographic order. */
+function compareVersions(a, b) {
+  const left = SEMVER_RE.exec(a);
+  const right = SEMVER_RE.exec(b);
+  if (!left || !right) throw new Error(`invalid version ${a} or ${b}`);
+  for (let i = 1; i <= 3; i++) if (Number(left[i]) !== Number(right[i])) return Number(left[i]) - Number(right[i]);
+  if (!left[4] || !right[4]) return Number(Boolean(right[4])) - Number(Boolean(left[4]));
+  const lp = left[4].split('.');
+  const rp = right[4].split('.');
+  for (let i = 0; i < Math.max(lp.length, rp.length); i++) {
+    const x = lp[i];
+    const y = rp[i];
+    if (x === undefined || y === undefined) return x === undefined ? -1 : 1;
+    if (x === y) continue;
+    const xn = /^\d+$/.test(x);
+    const yn = /^\d+$/.test(y);
+    if (xn && yn) return Number(x) - Number(y);
+    if (xn !== yn) return xn ? -1 : 1;
+    return x < y ? -1 : 1;
+  }
+  return 0;
+}
+
+/** Match the packer's dependency projection from the archived manifest. */
+function manifestDependencies(manifest) {
+  const dependencies = manifest.dependencies ?? {};
+  const requires = new Set(Object.keys(dependencies));
+  for (const point of manifest.extensions ?? []) {
+    const address = point?.point;
+    const at = typeof address === 'string' ? address.lastIndexOf('#') : -1;
+    if (at > 0) requires.add(address.slice(0, at));
+  }
+  requires.delete(manifest.id);
+  return { requires: [...requires].sort(), dependencies };
+}
 const npm = (args, cwd) => execFileSync('npm', args, { cwd, stdio: 'inherit', shell: process.platform === 'win32' });
 // The archive goes by a relative name through cwd: GNU tar reads "C:\..." as host:path.
 const tar = (args, cwd) => execFileSync('tar', args, { cwd, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
@@ -73,6 +111,14 @@ function checkEntryFields(p) {
   if (!DIR_NAME_RE.test(p.dir)) { fail(`${p.id}: invalid dir "${p.dir}"`); ok = false; }
   if (!SHA256_RE.test(p.sha256)) { fail(`${p.id}: invalid sha256 "${p.sha256}"`); ok = false; }
   if (!normalizePluginApi(p.pluginApi)) { fail(`${p.id}: invalid pluginApi ${JSON.stringify(p.pluginApi)}`); ok = false; }
+  if (!SEMVER_RE.test(p.version)) { fail(`${p.id}: invalid version ${p.version}`); ok = false; }
+  if (p.requires !== undefined && (!Array.isArray(p.requires) || !p.requires.every((r) => typeof r === 'string'))) {
+    fail(`${p.id}: invalid requires`); ok = false;
+  }
+  if (p.dependencies !== undefined && (!p.dependencies || typeof p.dependencies !== 'object' || Array.isArray(p.dependencies) ||
+      !Object.entries(p.dependencies).every(([id, min]) => id && !id.includes('#') && typeof min === 'string' && SEMVER_RE.test(min)))) {
+    fail(`${p.id}: invalid dependencies`); ok = false;
+  }
   // Printers download archives next to registry.json, and only those can be reviewed here.
   if (p.url !== posix.basename(p.url) || p.url !== `${p.dir}-${p.version}.tar.gz`) {
     fail(`${p.id}: url must be "${p.dir}-${p.version}.tar.gz", got "${p.url}"`);
@@ -124,6 +170,11 @@ function checkArchive(p) {
   // Printers check the entry, browsers the manifest: they must agree.
   if (normalizePluginApi(manifest.pluginApi) !== normalizePluginApi(p.pluginApi)) {
     fail(`${p.id}: archive manifest needs plugin API ${JSON.stringify(manifest.pluginApi)}, registry.json says ${JSON.stringify(p.pluginApi)}`);
+  }
+  const deps = manifestDependencies(manifest);
+  if (JSON.stringify(deps.requires) !== JSON.stringify([...(p.requires ?? [])].sort()) ||
+      JSON.stringify(deps.dependencies) !== JSON.stringify(p.dependencies ?? {})) {
+    fail(`${p.id}@${p.version}: archive dependencies differ from registry.json`);
   }
   if (typeof manifest.entry !== 'string' || !existsSync(join(dir, manifest.entry))) {
     fail(`${p.id}: manifest.entry "${manifest.entry}" is not in the archive`);
@@ -182,6 +233,12 @@ function checkRebuild(p, unpacked) {
     warn(`${packer} not found: archive bytes not compared`);
     return;
   }
+  // Windows ships bsdtar, while the reproducible packer requires GNU tar options.
+  // File-tree equality above remains mandatory on every platform.
+  if (!tar(['--version'], registryDir).includes('GNU tar')) {
+    warn(`${p.id}: GNU tar unavailable; archive bytes not compared`);
+    return;
+  }
   const out = mkdtempSync(join(tmpdir(), 'tessera-repack-'));
   try {
     execFileSync(process.execPath, [packer, join(pluginDir, 'dist'), '--dir', p.dir, '--url-base', '.', '--out', out], { stdio: 'ignore' });
@@ -203,6 +260,7 @@ function main() {
   const seenIds = new Set();
   const seenDirs = new Set();
   const referenced = new Set(['registry.json']);
+  const published = new Map();
 
   for (const p of registry.plugins) {
     if (!checkEntryFields(p)) continue;
@@ -210,7 +268,28 @@ function main() {
     if (seenDirs.has(p.dir)) fail(`${p.id}: dir "${p.dir}" is used by another plugin`);
     seenIds.add(p.id);
     seenDirs.add(p.dir);
-    referenced.add(p.url);
+    const versions = p.versions ?? [Object.fromEntries(Object.entries(p).filter(([key]) => key !== 'id'))];
+    if (!Array.isArray(versions) || versions.length === 0) {
+      fail(`${p.id}: versions must be a non-empty array`);
+      continue;
+    }
+    const versionNames = new Set();
+    for (const version of versions) {
+      const entry = { ...version, id: p.id };
+      if (!checkEntryFields(entry)) continue;
+      if (versionNames.has(entry.version)) fail(`${p.id}@${entry.version}: listed twice`);
+      versionNames.add(entry.version);
+      if (entry.dir !== p.dir) fail(`${p.id}@${entry.version}: dir changed`);
+      referenced.add(entry.url);
+      published.set(`${p.id}@${entry.version}`, entry);
+      const unpacked = checkArchive(entry);
+      if (unpacked) rmSync(unpacked, { recursive: true, force: true });
+      console.log(`${p.id}@${entry.version}: checked`);
+    }
+    const latest = versions.reduce((a, b) => compareVersions(a.version, b.version) >= 0 ? a : b);
+    for (const key of ['dir', 'name', 'version', 'description', 'author', 'pluginApi', 'requires', 'dependencies', 'url', 'sha256', 'size']) {
+      if (JSON.stringify(p[key]) !== JSON.stringify(latest[key])) fail(`${p.id}: top-level ${key} differs from latest version`);
+    }
 
     const pluginDir = join(repo, 'plugins', p.dir);
     if (!existsSync(join(pluginDir, 'manifest.json'))) {
@@ -222,16 +301,31 @@ function main() {
       }
     }
 
-    const unpacked = checkArchive(p);
-    if (!unpacked) continue;
-    try {
-      if (rebuild && existsSync(pluginDir)) checkRebuild(p, unpacked);
-    } catch (e) {
-      fail(`${p.id}: ${e.message}`);
-    } finally {
-      rmSync(unpacked, { recursive: true, force: true });
+    if (rebuild && existsSync(pluginDir)) {
+      const unpacked = checkArchive(p);
+      if (unpacked) {
+        try { checkRebuild(p, unpacked); }
+        catch (e) { fail(`${p.id}: ${e.message}`); }
+        finally { rmSync(unpacked, { recursive: true, force: true }); }
+      }
     }
-    console.log(`${p.id}@${p.version}: checked`);
+  }
+
+  if (against) {
+    try {
+      const previous = JSON.parse(execFileSync('git', ['show', `${against}:registry/registry.json`], { cwd: repo, encoding: 'utf8' }));
+      for (const p of previous.plugins) {
+        for (const v of p.versions ?? [p]) {
+          const current = published.get(`${p.id}@${v.version}`);
+          const keys = new Set([...Object.keys(v), ...Object.keys(current ?? {})]);
+          keys.delete('id');
+          keys.delete('versions');
+          if (!current || [...keys].some((key) => JSON.stringify(current[key]) !== JSON.stringify(v[key]))) {
+            fail(`${p.id}@${v.version}: published version was removed or changed`);
+          }
+        }
+      }
+    } catch (e) { fail(`Cannot compare published history with ${against}: ${e.message}`); }
   }
 
   for (const name of readdirSync(registryDir)) {

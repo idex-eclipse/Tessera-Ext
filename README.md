@@ -138,13 +138,18 @@ TESSERA_REGISTRY_URL=https://raw.githubusercontent.com/<you>/Tessera-Ext/<branch
 
 ```
 plugins/<name>/                 plugin sources: package.json, manifest.json, src/, tests
-registry/registry.json          index: id, dir, name, version, pluginApi, url, sha256, size
+registry/registry.json          one id per plugin; versions with their own metadata and sha256
 registry/<dir>-<version>.tar.gz archive: manifest.json + built files at its root
 ```
 
 Sources and archives live in the same repository: anyone can rebuild an archive from
 `plugins/<name>/` at the same commit and get the same sha256. The archive is
 reproducible: entries are sorted, timestamps and owners are zeroed.
+
+The registry keeps every published version. Top-level release fields mirror the newest
+version for older Tessera managers; new managers choose the newest release compatible
+with their PluginAPI and dependencies. Older managers still need a Tessera update to
+use this selection. Reusing a version number with changed bytes or metadata is refused.
 
 `url` is relative to `registry.json`, so archives are downloaded from the same place
 as the index (raw.githubusercontent.com). No GitHub Releases are needed.
@@ -190,11 +195,12 @@ complete example.
 
    This needs Python 3.7 or newer; on Windows the command is `python`.
 
-4. Commit the sources, the new archive and `registry.json` **together**. Delete the
-   old archive unless some printers should stay on that version.
+4. Commit the sources, the new archive and `registry.json` **together**. Keep every
+   previously published archive; the verifier checks their hashes and manifests.
 
-CI (`.github/workflows/verify.yml`) runs the plugin's tests on every push and pull request,
-rebuilds it from the sources and compares the result with the archive and `registry.json`.
+CI (`.github/workflows/verify.yml`) checks every published archive against its version
+entry, prevents published versions from being removed or changed, and rebuilds the
+current version of each plugin from its current sources.
 The same check locally, from the repository root: `node scripts/verify-registry.mjs --rebuild`.
 
 To test a release on printers first, publish it on a branch (for example `dev`) and

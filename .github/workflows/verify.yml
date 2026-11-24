@@ -22,6 +22,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: Tessera-Ext
+          # Comparing the proposed registry to its base prevents silent archive loss.
+          fetch-depth: 0
       # Plugins take host types and the packer from a sibling Tessera checkout:
       # main for main, dev for everything else.
       - uses: actions/checkout@v4
@@ -34,4 +36,6 @@ jobs:
           node-version: 22
       - name: Verify registry against sources
         working-directory: Tessera-Ext
-        run: node scripts/verify-registry.mjs --rebuild
+        env:
+          REGISTRY_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: node scripts/verify-registry.mjs --rebuild --against "$REGISTRY_BASE"
